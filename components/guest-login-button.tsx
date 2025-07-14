@@ -1,15 +1,14 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { supabaseClient } from "@/lib/supabase/client" // 修正: createClient() から supabaseClient へ
+import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { useState } from "react"
 
 export function GuestLoginButton() {
   const router = useRouter()
-  // 修正: createClient() の呼び出しを削除し、直接 supabaseClient を使用
-  const supabase = supabaseClient
+  const supabase = createClient()
   const [isLoading, setIsLoading] = useState(false)
 
   const handleGuestLogin = async () => {
@@ -35,8 +34,6 @@ export function GuestLoginButton() {
         // For simplicity, we'll just log and not redirect
       } else if (data.user) {
         console.log("Guest user signed up:", data.user.id)
-        // After successful sign-up, refresh the router to ensure server components re-fetch session
-        router.refresh()
         router.push("/plan/create") // Redirect to plan creation page
       }
     } catch (error) {

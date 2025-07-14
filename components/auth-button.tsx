@@ -1,14 +1,13 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { supabaseClient } from "@/lib/supabase/client" // 修正: createClient() から supabaseClient へ
+import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { FcGoogle } from "react-icons/fc" // Using react-icons for Google icon
 
 export function AuthButton() {
   const router = useRouter()
-  // 修正: createClient() の呼び出しを削除し、直接 supabaseClient を使用
-  const supabase = supabaseClient
+  const supabase = createClient()
 
   const handleSignIn = async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({

@@ -1,4 +1,3 @@
-import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 
@@ -8,14 +7,12 @@ export async function GET(request: Request) {
   const origin = requestUrl.origin
 
   if (code) {
-    const cookieStore = cookies()
-    const supabase = createClient()
+    const supabase = await createClient() // await を追加
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      return NextResponse.redirect(`${origin}/plan/create`) // Redirect to plan creation page after successful login
+      return NextResponse.redirect(`${origin}/plan/create`)
     }
   }
 
-  // return the user to an error page with instructions
   return NextResponse.redirect(`${origin}/login?error=auth_failed`)
 }

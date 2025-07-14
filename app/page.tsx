@@ -2,9 +2,11 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { AuthButton } from "@/components/auth-button"
 import { GuestLoginButton } from "@/components/guest-login-button"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 
 export default async function IndexPage() {
-  const supabase = createClient()
+  const supabase = await createClient() // await を追加
 
   const { data } = await supabase.auth.getUser()
   const user = data?.user
@@ -24,6 +26,11 @@ export default async function IndexPage() {
         <div className="space-y-4">
           <AuthButton />
           <GuestLoginButton />
+          {user && ( // ユーザーがログインしている場合のみ表示
+            <Link href="/mypage" passHref>
+              <Button className="w-full bg-spotify-gray text-white hover:bg-spotify-lightdark">マイページへ</Button>
+            </Link>
+          )}
         </div>
         <p className="text-sm text-spotify-lightgray">ログインすることで、過去のプラン履歴を保存・閲覧できます。</p>
       </div>
