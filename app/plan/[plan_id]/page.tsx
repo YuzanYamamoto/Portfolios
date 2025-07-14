@@ -12,7 +12,7 @@ interface PlanDetailsPageProps {
 }
 
 export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) {
-  const { plan_id } = params
+  const { plan_id } = await params // ここを await params に変更
   const supabase = await createClient()
 
   const { data: plan, error } = await supabase
