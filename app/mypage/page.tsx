@@ -13,10 +13,9 @@ export default async function MyPage() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/login") // ログインしていない場合はログインページへリダイレクト
+    redirect("/login")
   }
 
-  // ユーザーのプラン履歴をフェッチ
   const { data: plans, error: plansError } = await supabase
     .from("plans")
     .select("id, departure, theme, created_at")
@@ -25,7 +24,6 @@ export default async function MyPage() {
 
   if (plansError) {
     console.error("Error fetching plans:", plansError)
-    // エラーハンドリングを強化することも可能
   }
 
   return (
