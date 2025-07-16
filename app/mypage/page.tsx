@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { MapPin, CalendarDays, Music } from "lucide-react"
+import { logout } from "@/app/actions/logout"
 
 export default async function MyPage() {
   const supabase = await createClient()
@@ -13,7 +14,7 @@ export default async function MyPage() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("/login")
+    redirect("app\page.tsx")
   }
 
   const { data: plans, error: plansError } = await supabase
@@ -31,6 +32,15 @@ export default async function MyPage() {
       <Card className="w-full max-w-4xl bg-spotify-lightdark border-spotify-gray text-white mt-8">
         <CardHeader>
           <CardTitle className="text-3xl font-bold text-spotify-green">マイページ</CardTitle>
+          {/* ✅ ログアウトボタン（右上） */}
+          <form action={logout}>
+            <Button
+              variant="outline"
+              className="text-white border-white hover:bg-white hover:text-black"
+            >
+              ログアウト
+            </Button>
+          </form>
           <CardDescription className="text-spotify-lightgray">
             {user.email}さんのドライブプラン履歴とプレイリストです。
           </CardDescription>
