@@ -14,7 +14,7 @@ export default async function MyPage() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect("app\page.tsx")
+    redirect("/")
   }
 
   const { data: plans, error: plansError } = await supabase
