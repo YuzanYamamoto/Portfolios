@@ -29,16 +29,14 @@ export default async function MyPage() {
 
   return (
     <main className="flex min-h-screen flex-col bg-spotify-dark text-white">
-      {/* Header */}
+      {/* ヘッダーナビゲーション */}
       <header className="w-full bg-spotify-dark border-b border-spotify-gray">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            {/* Logo */}
             <Link href="/" className="text-2xl font-bold text-spotify-green">
               Tune Drive
             </Link>
             
-            {/* Navigation Buttons */}
             <div className="flex items-center gap-4">
               <Link href="/plan/create">
                 <Button className="bg-spotify-green text-white hover:bg-spotify-green/90">
@@ -50,11 +48,10 @@ export default async function MyPage() {
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* メインコンテンツ */}
       <div className="flex-1 flex flex-col items-center p-4">
         <Card className="w-full max-w-4xl bg-spotify-lightdark border-spotify-gray text-white mt-8">
           <CardHeader>
-            {/* タイトルとログアウトボタンを横並びに配置 */}
             <div className="flex flex-row items-start justify-between w-full gap-2">
               <div className="flex-1 min-w-0">
                 <CardTitle className="text-2xl sm:text-3xl font-bold text-spotify-green">マイページ</CardTitle>
