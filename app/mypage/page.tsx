@@ -30,9 +30,14 @@ export default async function MyPage() {
   return (
     <main className="flex min-h-screen flex-col items-center p-4 bg-spotify-dark text-white">
       <Card className="w-full max-w-4xl bg-spotify-lightdark border-spotify-gray text-white mt-8">
-        <CardHeader>
-          <CardTitle className="text-3xl font-bold text-spotify-green">マイページ</CardTitle>
-          {/* ✅ ログアウトボタン（右上） */}
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-3xl font-bold text-spotify-green">マイページ</CardTitle>
+            <CardDescription className="text-spotify-lightgray">
+            {user.email}さんのドライブプラン履歴とプレイリストです。
+            </CardDescription>
+          </div>
+          {/* ✅ ログアウトボタン（右端） */}
           <form action={logout}>
             <Button
               variant="outline"
@@ -41,9 +46,6 @@ export default async function MyPage() {
               ログアウト
             </Button>
           </form>
-          <CardDescription className="text-spotify-lightgray">
-            {user.email}さんのドライブプラン履歴とプレイリストです。
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
           {/* プラン作成履歴セクション */}
