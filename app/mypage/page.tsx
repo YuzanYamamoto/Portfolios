@@ -30,22 +30,26 @@ export default async function MyPage() {
   return (
     <main className="flex min-h-screen flex-col items-center p-4 bg-spotify-dark text-white">
       <Card className="w-full max-w-4xl bg-spotify-lightdark border-spotify-gray text-white mt-8">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-3xl font-bold text-spotify-green">マイページ</CardTitle>
-            <CardDescription className="text-spotify-lightgray">
-            {user.email}さんのドライブプラン履歴とプレイリストです。
-            </CardDescription>
+        <CardHeader>
+          {/* タイトルとログアウトボタンを横並びに配置 */}
+          <div className="flex flex-row items-start justify-between w-full gap-2">
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-2xl sm:text-3xl font-bold text-spotify-green">マイページ</CardTitle>
+              <CardDescription className="text-spotify-lightgray mt-2">
+                {user.email}さんのドライブプラン履歴とプレイリストです。
+              </CardDescription>
+            </div>
+            <div className="flex-shrink-0 -mt-1">
+              <form action={logout}>
+                <Button
+                  variant="outline"
+                  className="text-white border-white hover:bg-white hover:text-black text-sm px-3 py-1"
+                >
+                  ログアウト
+                </Button>
+              </form>
+            </div>
           </div>
-          {/* ✅ ログアウトボタン（右端） */}
-          <form action={logout}>
-            <Button
-              variant="outline"
-              className="text-white border-white hover:bg-white hover:text-black"
-            >
-              ログアウト
-            </Button>
-          </form>
         </CardHeader>
         <CardContent className="space-y-8">
           {/* プラン作成履歴セクション */}
