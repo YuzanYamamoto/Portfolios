@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -11,6 +12,7 @@ import { Loader } from "@/components/loader"
 import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { User } from "lucide-react"
 
 export default function CreatePlanPage() {
   const [departure, setDeparture] = useState("")
@@ -85,7 +87,22 @@ export default function CreatePlanPage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-spotify-dark text-white">
-      <Card className="w-full max-w-md bg-spotify-lightdark border-spotify-gray text-white">
+      {/* ヘッダーナビゲーション */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-spotify-dark/95 backdrop-blur-sm border-b border-spotify-gray">
+        <div className="flex justify-between items-center p-4 max-w-6xl mx-auto">
+          <h1 className="text-xl font-bold text-spotify-green">Tune Drive</h1>
+          <Link
+            href="/mypage"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-spotify-lightdark hover:bg-spotify-gray transition-colors text-spotify-lightgray hover:text-white"
+          >
+            <User className="h-4 w-4" />
+            マイページ
+          </Link>
+        </div>
+      </div>
+
+      {/* メインコンテンツ */}
+      <Card className="w-full max-w-md bg-spotify-lightdark border-spotify-gray text-white mt-20">
         <CardHeader>
           <CardTitle className="text-3xl font-bold text-spotify-green">プラン作成</CardTitle>
           <CardDescription className="text-spotify-lightgray">
