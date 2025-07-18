@@ -47,6 +47,7 @@ export async function POST(request: Request) {
         1. **ルート**: 3〜5箇所の魅力的なスポットを含む
         2. **旅のヒント**: 実用的なアドバイスと注意点
         3. **総合情報**: ドライブ全体の概要
+        4. **Spotifyプレイリスト**: ドライブの雰囲気を盛り上げる曲の提案（5〜10曲）
 
         ## 出力形式
         以下のJSON形式で回答してください:
@@ -61,7 +62,8 @@ export async function POST(request: Request) {
               "best_time": "おすすめの時間帯",
               "highlights": ["見どころ1", "見どころ2", "見どころ3"],
               "budget_range": "予算の目安（円）",
-              "parking_info": "駐車場情報"
+              "parking_info": "駐車場情報",
+              "photo_prompt": "このスポットを象徴する、魅力的で具体的な写真の撮影イメージ（例：夕日に照らされる〇〇橋、△△カフェの色鮮やかなランチプレート）"
             }
           ],
           "total_duration": "総所要時間（移動時間含む）",
@@ -83,11 +85,20 @@ export async function POST(request: Request) {
             }
           ],
           "local_specialties": ["地域の特産品1", "地域の特産品2"],
-          "photo_spots": ["写真撮影におすすめの場所1", "写真撮影におすすめの場所2"]
+          "photo_spots": ["写真撮影におすすめの場所1", "写真撮影におすすめの場所2"],
+          "spotify_playlist": {
+            "title": "プレイリストのタイトル（例：${theme}を楽しむ爽快ドライブ）",
+            "description": "プレイリストの簡単な説明（50文字程度）",
+            "tracks": [
+              { "song_name": "曲名1", "artist": "アーティスト名1" },
+              { "song_name": "曲名2", "artist": "アーティスト名2" },
+              { "song_name": "曲名3", "artist": "アーティスト名3" }
+            ]
+          }
         }
 
         ## 重要な指示
-        - 実在する場所を基に作成してください
+        - 実在する場所や楽曲を基に作成してください
         - 季節や天候を考慮したプランにしてください
         - 家族連れ、カップル、友人同士など、様々な層に配慮してください
         - 地域の文化や特色を反映させてください
@@ -96,8 +107,28 @@ export async function POST(request: Request) {
       `,
     })
 
-    let generatedPlan: { 
-      route: any[];
+    // --- 型定義を追加してより安全に ---
+    type Spot = {
+        name: string;
+        description: string;
+        stay_minutes: number;
+        category: string;
+        address: string;
+        best_time: string;
+        highlights: string[];
+        budget_range: string;
+        parking_info: string;
+        photo_prompt: string; // 追加
+    };
+
+    type SpotifyPlaylist = {
+        title: string;
+        description: string;
+        tracks: { song_name: string; artist: string; }[];
+    };
+
+    type GeneratedPlan = {
+      route: Spot[];
       total_duration: string;
       total_distance: string;
       best_season: string;
@@ -110,16 +141,19 @@ export async function POST(request: Request) {
         weather: string;
         safety: string;
       };
-      alternative_spots: any[];
+      alternative_spots: { name: string; reason: string; }[];
       local_specialties: string[];
       photo_spots: string[];
-    }
+      spotify_playlist: SpotifyPlaylist; // 追加
+    };
+
+    let generatedPlan: GeneratedPlan;
+    
     try {
       // Markdownコードブロックの囲みを削除する
       const cleanedText = text.replace(/```json\n([\s\S]*?)\n```/, "$1").trim()
       generatedPlan = JSON.parse(cleanedText)
     } catch (parseError: unknown) {
-      // parseError を unknown 型として捕捉
       console.error("Failed to parse AI response as JSON:", parseError)
       console.error("AI raw response:", text) // 元のテキストもログに残す
       return NextResponse.json({ message: "AIからの応答を解析できませんでした。" }, { status: 500 })
@@ -139,7 +173,10 @@ export async function POST(request: Request) {
       alternative_spots: generatedPlan.alternative_spots,
       local_specialties: generatedPlan.local_specialties,
       photo_spots: generatedPlan.photo_spots,
+      spotify_playlist: generatedPlan.spotify_playlist, // 追加
     }
+    
+    // 補足: Supabaseの 'plans' テーブルに 'spotify_playlist' カラム (型: jsonb) を追加する必要があります。
 
     const { data, error } = await supabase.from("plans").insert([newPlan]).select("id").single()
 
@@ -150,12 +187,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ plan_id: data.id, status: "success" })
   } catch (error: unknown) {
-    // error を unknown 型として捕捉
-    console.error("Error generating plan with OpenAI:", error) // OpenAI版
-    // console.error("Error generating plan with Gemini:", error) // Gemini版
+    console.error("Error generating plan with AI:", error)
     let errorMessage = "AIによるプラン生成中に不明なエラーが発生しました。"
     if (error instanceof Error) {
-      // Error インスタンスであることを確認
       errorMessage = error.message
     } else if (
       typeof error === "object" &&
