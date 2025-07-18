@@ -70,14 +70,12 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
             {/* ルートをタブで表示 */}
             <h2 className="text-2xl font-bold text-spotify-green">ルート</h2>
             <Tabs defaultValue="0" className="w-full">
-              {/* TabsListのスタイル変更 */}
               <TabsList className="grid w-full grid-cols-3 gap-2 p-1 bg-spotify-dark rounded-lg overflow-hidden whitespace-nowrap">
                 {plan.route.map((spot: any, index: number) => (
-                  // TabsTriggerのスタイル変更
                   <TabsTrigger
                     key={index}
                     value={String(index)}
-                    className="flex-shrink-0 px-4 py-2 rounded-md text-spotify-lightgray data-[state=active]:bg-spotify-green data-[state=active]:text-white transition-all duration-200 hover:bg-spotify-lightgray/20 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" // Add this line
+                    className="flex-shrink-0 px-4 py-2 rounded-md text-spotify-lightgray data-[state=active]:bg-spotify-green data-[state=active]:text-white transition-all duration-200 hover:bg-spotify-lightgray/20 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                   >
                     {index + 1}. {spot.name}
                   </TabsTrigger>
@@ -92,6 +90,20 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
                     <div className="flex items-center gap-2 text-spotify-lightgray text-sm mt-3">
                       <Clock className="h-4 w-4 text-spotify-green" />
                       <span>滞在目安: {spot.stay_minutes}分</span>
+                    </div>
+
+                    {/* 各地点のGoogle Map 埋め込み */}
+                    <div className="w-full h-60 rounded-lg overflow-hidden border border-spotify-lightgray/20 mt-4">
+                      <iframe
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        loading="lazy"
+                        allowFullScreen
+                        referrerPolicy="no-referrer-when-downgrade"
+                        // 各地点のマップURLを生成
+                        src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_Maps_API_KEY}&q=${encodeURIComponent(spot.name)}`}
+                      ></iframe>
                     </div>
                   </div>
                 </TabsContent>
