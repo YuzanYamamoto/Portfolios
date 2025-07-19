@@ -30,8 +30,6 @@ interface GeneratedPlan {
   route: Spot[];
   total_duration: string;
   total_distance: string;
-  best_season: string;
-  difficulty_level: string;
   recommended_start_time: string;
   tips: {
     driving: string;
@@ -40,7 +38,6 @@ interface GeneratedPlan {
     weather: string;
     safety: string;
   };
-  alternative_spots: { name: string; reason: string }[];
   local_specialties: string[];
   photo_spots: string[];
   overall_spotify_playlist?: OverallSpotifyPlaylist;
@@ -77,8 +74,6 @@ function validateGeneratedPlan(plan: any): plan is GeneratedPlan {
       ) &&
       typeof plan.total_duration === 'string' &&
       typeof plan.total_distance === 'string' &&
-      typeof plan.best_season === 'string' &&
-      typeof plan.difficulty_level === 'string' &&
       typeof plan.recommended_start_time === 'string' &&
       plan.tips &&
       typeof plan.tips.driving === 'string' &&
@@ -209,8 +204,6 @@ export async function POST(request: Request) {
           ],
           "total_duration": "総所要時間",
           "total_distance": "総距離",
-          "best_season": "おすすめの季節",
-          "difficulty_level": "難易度レベル",
           "recommended_start_time": "おすすめの出発時間",
           "tips": {
             "driving": "運転に関するアドバイス",
@@ -219,7 +212,6 @@ export async function POST(request: Request) {
             "weather": "天候に関する注意点",
             "safety": "安全に関する注意事項"
           },
-          "alternative_spots": [{"name": "代替スポット名", "reason": "理由"}],
           "local_specialties": ["地域の特産品1", "地域の特産品2"],
           "photo_spots": ["写真撮影におすすめの場所1", "写真撮影におすすめの場所2"],
           "overall_spotify_playlist": {
@@ -272,11 +264,8 @@ export async function POST(request: Request) {
       route: generatedPlan.route,
       total_duration: generatedPlan.total_duration,
       total_distance: generatedPlan.total_distance,
-      best_season: generatedPlan.best_season,
-      difficulty_level: generatedPlan.difficulty_level,
       recommended_start_time: generatedPlan.recommended_start_time,
       tips: generatedPlan.tips,
-      alternative_spots: generatedPlan.alternative_spots,
       local_specialties: generatedPlan.local_specialties,
       photo_spots: generatedPlan.photo_spots,
       overall_spotify_playlist: generatedPlan.overall_spotify_playlist,
@@ -305,6 +294,13 @@ export async function POST(request: Request) {
     let errorMessage = "AIによるプラン生成中に不明なエラーが発生しました。";
     if (error instanceof Error) {
       errorMessage = error.message;
+    } else if (
+      typeof error === "object" &&
+      error !== null &&
+      "message" in error &&
+      typeof (error as any).message === "string"
+    ) {
+      errorMessage = (error as any).message;
     } else if (
       typeof error === "object" &&
       error !== null &&
