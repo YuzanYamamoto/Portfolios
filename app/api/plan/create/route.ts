@@ -88,7 +88,7 @@ export async function POST(request: Request) {
       // model: google("gemini-1.5-flash"), // Gemini版（軽量で高速、クォータ消費も少ない）
       prompt: `
         あなたは経験豊富なドライブプランナーです。
-        以下の情報に基づいて、魅力的で実用的なドライブプランを作成してください。
+        以下の情報に基づいて、魅力的で実用的なドライブを楽しめるプランを作成してください。
 
         ## 基本情報
         出発地: ${departure}
