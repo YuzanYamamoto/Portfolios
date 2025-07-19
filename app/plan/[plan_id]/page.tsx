@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { MapPin, Clock, Lightbulb, Eye, Sun, Car } from "lucide-react"
+import { MapPin, Clock, Lightbulb, Eye, Sun, Car, Wallet, Music, Calendar, Route, AlertCircle, Camera, MapIcon, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import { User } from "lucide-react"
 
@@ -17,13 +17,62 @@ interface PlanDetailsPageProps {
   }
 }
 
+// プランの型定義
+interface Plan {
+  id: string;
+  departure: string;
+  theme: string;
+  route: Spot[];
+  tips: Tips;
+  created_at: string;
+  total_duration?: string;
+  total_distance?: string;
+  best_season?: string;
+  difficulty_level?: string;
+  recommended_start_time?: string;
+  alternative_spots?: { name: string; reason: string }[];
+  local_specialties?: string[];
+  photo_spots?: string[];
+  overall_spotify_playlist?: {
+    title: string;
+    description: string;
+    url: string;
+  };
+}
+
+interface Spot {
+  name: string;
+  description: string;
+  stay_minutes: number;
+  category: string;
+  address: string;
+  best_time: string;
+  highlights: string[];
+  budget_range: string;
+  parking_info: string;
+  photo_prompt?: string;
+}
+
+interface Tips {
+  driving: string;
+  preparation: string;
+  budget: string;
+  weather: string;
+  safety: string;
+}
+
 export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) {
   const { plan_id } = params
   const supabase = await createClient()
 
   const { data: plan, error } = await supabase
     .from("plans")
-    .select("id, departure, theme, route, tips, created_at")
+    .select(`
+      id, departure, theme, route, tips, created_at,
+      total_duration, total_distance, best_season, difficulty_level,
+      recommended_start_time, alternative_spots, local_specialties,
+      photo_spots, overall_spotify_playlist
+    `)
     .eq("id", plan_id)
     .single()
 
@@ -31,6 +80,8 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
     console.error("Error fetching plan:", error)
     notFound()
   }
+
+  const planData = plan as Plan
 
   return (
     <main className="flex min-h-screen flex-col bg-spotify-dark text-white">
@@ -60,8 +111,9 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
       </header>
 
       <div className="flex-1 flex flex-col items-center p-4">
-        <Card className="w-full max-w-3xl bg-spotify-lightdark border-spotify-gray text-white">
-          <CardHeader>            <CardTitle className="text-3xl font-bold text-spotify-green">ドライブプラン詳細</CardTitle>
+        <Card className="w-full max-w-4xl bg-spotify-lightdark border-spotify-gray text-white">
+          <CardHeader>
+            <CardTitle className="text-3xl font-bold text-spotify-green">ドライブプラン詳細</CardTitle>
             <CardDescription className="text-spotify-lightgray">
               AIが生成したあなたのドライブプランです。
             </CardDescription>
@@ -72,19 +124,59 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex items-center gap-2">
                 <MapPin className="h-5 w-5 text-spotify-green" />
-                <span className="text-lg font-semibold">出発地: {plan.departure}</span>
+                <span className="text-lg font-semibold">出発地: {planData.departure}</span>
               </div>
-              <Badge className="bg-spotify-green text-white text-md px-3 py-1">テーマ: {plan.theme}</Badge>
+              <Badge className="bg-spotify-green text-white text-md px-3 py-1">テーマ: {planData.theme}</Badge>
             </div>
 
             <Separator className="bg-spotify-gray" />
 
+            {/* 基本情報セクション */}
+            {(planData.total_duration || planData.total_distance || planData.recommended_start_time) && (
+              <>
+                <h2 className="text-2xl font-bold text-spotify-green">プラン概要</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {planData.total_duration && (
+                    <div className="flex items-center gap-2 bg-spotify-gray p-3 rounded-lg">
+                      <Clock className="h-5 w-5 text-spotify-green" />
+                      <div>
+                        <p className="text-sm text-spotify-lightgray">総所要時間</p>
+                        <p className="font-semibold">{planData.total_duration}</p>
+                      </div>
+                    </div>
+                  )}
+                  {planData.total_distance && (
+                    <div className="flex items-center gap-2 bg-spotify-gray p-3 rounded-lg">
+                      <Route className="h-5 w-5 text-spotify-green" />
+                      <div>
+                        <p className="text-sm text-spotify-lightgray">総距離</p>
+                        <p className="font-semibold">{planData.total_distance}</p>
+                      </div>
+                    </div>
+                  )}
+                  {planData.recommended_start_time && (
+                    <div className="flex items-center gap-2 bg-spotify-gray p-3 rounded-lg">
+                      <Sun className="h-5 w-5 text-spotify-green" />
+                      <div>
+                        <p className="text-sm text-spotify-lightgray">推奨出発時間</p>
+                        <p className="font-semibold">{planData.recommended_start_time}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <Separator className="bg-spotify-gray" />
+              </>
+            )}
+
             {/* ルートをタブで表示 */}
-            <h2 className="text-2xl font-bold text-spotify-green">ルート</h2>
+            <div className="flex items-center gap-2 mb-4">
+              <MapIcon className="h-6 w-6 text-spotify-green" />
+              <h2 className="text-2xl font-bold text-spotify-green">ルート</h2>
+            </div>
             <Tabs defaultValue="0" className="w-full">
               <div className="overflow-x-auto">
                 <TabsList className="flex w-max min-w-full gap-2 p-1 bg-spotify-dark rounded-lg">
-                  {plan.route.map((spot: any, index: number) => (
+                  {planData.route.map((spot: Spot, index: number) => (
                     <TabsTrigger
                       key={index}
                       value={String(index)}
@@ -97,11 +189,28 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
                 </TabsList>
               </div>
 
-              {plan.route.map((spot: any, index: number) => (
+              {planData.route.map((spot: Spot, index: number) => (
                 <TabsContent key={index} value={String(index)}>
                   <div className="bg-spotify-gray p-4 rounded-lg shadow-lg mt-4 border border-spotify-lightgray/20">
-                    <h3 className="text-2xl font-bold text-spotify-green mb-2">{spot.name}</h3>
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="text-2xl font-bold text-spotify-green">{spot.name}</h3>
+                      {spot.category && (
+                        <Badge variant="secondary" className="bg-spotify-lightdark text-spotify-lightgray">
+                          {spot.category}
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-spotify-lightgray leading-relaxed mb-3">{spot.description}</p>
+                    
+                    {/* 住所情報 */}
+                    {spot.address && (
+                      <div className="mb-3">
+                        <p className="text-sm text-spotify-lightgray">
+                          <MapPin className="inline h-4 w-4 mr-1 text-spotify-green" />
+                          {spot.address}
+                        </p>
+                      </div>
+                    )}
                     
                     {/* 基本情報を横並びに */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-spotify-lightgray text-sm mt-3 mb-4">
@@ -150,7 +259,33 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
                       </div>
                     )}
 
-                    {/* 各地点のGoogle Map 埋め込み */}
+                    {/* 予算 */}
+                    {spot.budget_range && (
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Wallet className="h-4 w-4 text-spotify-green" />
+                          <span className="text-sm font-semibold text-spotify-green">予算目安</span>
+                        </div>
+                        <div className="bg-spotify-lightdark p-3 rounded-md border border-spotify-lightgray/10">
+                          <p className="text-sm text-spotify-lightgray">{spot.budget_range}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 写真撮影のポイント */}
+                    {spot.photo_prompt && (
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Camera className="h-4 w-4 text-spotify-green" />
+                          <span className="text-sm font-semibold text-spotify-green">写真撮影のポイント</span>
+                        </div>
+                        <div className="bg-spotify-lightdark p-3 rounded-md border border-spotify-lightgray/10">
+                          <p className="text-sm text-spotify-lightgray">{spot.photo_prompt}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Google Map 埋め込み */}
                     <div className="w-full h-60 rounded-lg overflow-hidden border border-spotify-lightgray/20 mt-4">
                       <iframe
                         width="100%"
@@ -159,8 +294,7 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
                         loading="lazy"
                         allowFullScreen
                         referrerPolicy="no-referrer-when-downgrade"
-                        // 各地点のマップURLを生成
-                        src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_Maps_API_KEY}&q=${encodeURIComponent(spot.name)}`}
+                        src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_Maps_API_KEY}&q=${encodeURIComponent(spot.name + ' ' + spot.address)}`}
                       ></iframe>
                     </div>
                   </div>
@@ -170,21 +304,136 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
 
             <Separator className="bg-spotify-gray" />
 
-            {/* ヒント */}
-            <h2 className="text-2xl font-bold text-spotify-green">旅のヒント</h2>
-            <div className="flex flex-col gap-2 bg-spotify-gray p-4 rounded-lg shadow-lg border border-spotify-lightgray/20">
-              {plan.tips && typeof plan.tips === "object" && !Array.isArray(plan.tips) &&
-                Object.entries(plan.tips).map(([key, tip]) => (
-                  <div key={key} className="flex items-start gap-2 text-spotify-lightgray">
-                    <Lightbulb className="h-4 w-4 text-spotify-green mt-1" />
-                    <p className="text-sm">{tip}</p>
+            {/* 写真撮影スポット */}
+            {planData.photo_spots && planData.photo_spots.length > 0 && (
+              <>
+                <div className="flex items-center gap-2 mb-4">
+                  <Camera className="h-6 w-6 text-spotify-green" />
+                  <h2 className="text-2xl font-bold text-spotify-green">写真撮影おすすめスポット</h2>
+                </div>
+                <div className="bg-spotify-gray p-4 rounded-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {planData.photo_spots.map((spot: string, index: number) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <Camera className="h-4 w-4 text-spotify-green mt-1 flex-shrink-0" />
+                        <span className="text-sm text-spotify-lightgray">{spot}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+                <Separator className="bg-spotify-gray" />
+              </>
+            )}
+
+            {/* 地域の特産品 */}
+            {planData.local_specialties && planData.local_specialties.length > 0 && (
+              <>
+                <h2 className="text-2xl font-bold text-spotify-green">地域の特産品・グルメ</h2>
+                <div className="bg-spotify-gray p-4 rounded-lg">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {planData.local_specialties.map((specialty: string, index: number) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <span className="text-spotify-green text-sm">🍽️</span>
+                        <span className="text-sm text-spotify-lightgray">{specialty}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <Separator className="bg-spotify-gray" />
+              </>
+            )}
+
+            {/* Spotifyプレイリスト */}
+            {planData.overall_spotify_playlist && (
+              <>
+                <div className="flex items-center gap-2 mb-4">
+                  <Music className="h-6 w-6 text-spotify-green" />
+                  <h2 className="text-2xl font-bold text-spotify-green">ドライブプレイリスト</h2>
+                </div>
+                <div className="bg-spotify-gray p-4 rounded-lg">
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold text-white mb-2">
+                      {planData.overall_spotify_playlist.title}
+                    </h3>
+                    <p className="text-spotify-lightgray text-sm mb-3">
+                      {planData.overall_spotify_playlist.description}
+                    </p>
+                    <div className="flex items-center gap-2 text-spotify-green hover:text-spotify-green/80 transition-colors">
+                      <ExternalLink className="h-4 w-4" />
+                      <a 
+                        href={planData.overall_spotify_playlist.url.replace('/embed/', '/playlist/')} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-sm underline"
+                      >
+                        Spotifyで開く
+                      </a>
+                    </div>
+                  </div>
+                  <div className="w-full rounded-lg overflow-hidden">
+                    <iframe
+                      src={planData.overall_spotify_playlist.url}
+                      width="100%"
+                      height="352"
+                      frameBorder="0"
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                      className="rounded-lg"
+                    ></iframe>
+                  </div>
+                </div>
+                <Separator className="bg-spotify-gray" />
+              </>
+            )}
+
+            {/* ヒント */}
+            <div className="flex items-center gap-2 mb-4">
+              <Lightbulb className="h-6 w-6 text-spotify-green" />
+              <h2 className="text-2xl font-bold text-spotify-green">旅のヒント</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {planData.tips && typeof planData.tips === "object" && !Array.isArray(planData.tips) &&
+                Object.entries(planData.tips).map(([key, tip]) => {
+                  const icons = {
+                    driving: Car,
+                    preparation: AlertCircle,
+                    budget: Wallet,
+                    weather: Sun,
+                    safety: AlertCircle
+                  } as const;
+                  
+                  const Icon = icons[key as keyof typeof icons] || Lightbulb;
+                  const titles = {
+                    driving: "運転について",
+                    preparation: "事前準備",
+                    budget: "予算について",
+                    weather: "天候について",
+                    safety: "安全について"
+                  };
+                  
+                  return (
+                    <div key={key} className="bg-spotify-gray p-4 rounded-lg border border-spotify-lightgray/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Icon className="h-4 w-4 text-spotify-green" />
+                        <h3 className="font-semibold text-spotify-green text-sm">
+                          {titles[key as keyof typeof titles] || key}
+                        </h3>
+                      </div>
+                      <p className="text-sm text-spotify-lightgray leading-relaxed">{tip}</p>
+                    </div>
+                  );
+                })}
             </div>
 
             {/* 作成日 */}
             <p className="text-sm text-spotify-lightgray text-right mt-4">
-              作成日時: {new Date(plan.created_at).toLocaleDateString()}
+              作成日時: {new Date(planData.created_at).toLocaleDateString('ja-JP', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
             </p>
           </CardContent>
         </Card>

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generateText } from "ai";
-import { openai } from "@ai-sdk/openai"; // OpenAI版
+import { openai } from "@ai-sdk/openai";
 // import { google } from "@ai-sdk/google" // Gemini版
 
 // ルート内の各スポットの期待される構造を定義します
@@ -22,8 +22,7 @@ interface Spot {
 interface OverallSpotifyPlaylist {
   title: string;
   description: string;
-  // Spotifyの埋め込みURLを直接格納するように変更
-  url: string; // 🚨 変更: 曲リストではなく埋め込みURLを直接ここに持つ
+  url: string;
 }
 
 // AIから生成されるプラン全体の構造を定義します
@@ -44,58 +43,149 @@ interface GeneratedPlan {
   alternative_spots: { name: string; reason: string }[];
   local_specialties: string[];
   photo_spots: string[];
-  overall_spotify_playlist?: OverallSpotifyPlaylist; // プラン全体のプレイリストは引き続きオプション
+  overall_spotify_playlist?: OverallSpotifyPlaylist;
+}
+
+// 入力値のサニタイズ関数
+function sanitizeInput(input: string): string {
+  return input
+    .replace(/[<>\"']/g, '') // HTMLタグや引用符を除去
+    .replace(/javascript:/gi, '') // JavaScriptプロトコルを除去
+    .trim()
+    .substring(0, 200); // 長さ制限
+}
+
+// 生成されたプランの構造を検証する関数
+function validateGeneratedPlan(plan: any): plan is GeneratedPlan {
+  try {
+    return (
+      plan &&
+      typeof plan === 'object' &&
+      Array.isArray(plan.route) &&
+      plan.route.length === 5 &&
+      plan.route.every((spot: any) => 
+        spot &&
+        typeof spot.name === 'string' &&
+        typeof spot.description === 'string' &&
+        typeof spot.stay_minutes === 'number' &&
+        typeof spot.category === 'string' &&
+        typeof spot.address === 'string' &&
+        typeof spot.best_time === 'string' &&
+        Array.isArray(spot.highlights) &&
+        typeof spot.budget_range === 'string' &&
+        typeof spot.parking_info === 'string'
+      ) &&
+      typeof plan.total_duration === 'string' &&
+      typeof plan.total_distance === 'string' &&
+      typeof plan.best_season === 'string' &&
+      typeof plan.difficulty_level === 'string' &&
+      typeof plan.recommended_start_time === 'string' &&
+      plan.tips &&
+      typeof plan.tips.driving === 'string' &&
+      typeof plan.tips.preparation === 'string' &&
+      typeof plan.tips.budget === 'string' &&
+      typeof plan.tips.weather === 'string' &&
+      typeof plan.tips.safety === 'string' &&
+      Array.isArray(plan.local_specialties) &&
+      Array.isArray(plan.photo_spots) &&
+      (!plan.overall_spotify_playlist || (
+        typeof plan.overall_spotify_playlist.title === 'string' &&
+        typeof plan.overall_spotify_playlist.description === 'string' &&
+        typeof plan.overall_spotify_playlist.url === 'string'
+      ))
+    );
+  } catch {
+    return false;
+  }
+}
+
+// より堅牢なJSON解析関数
+function parseAIResponse(text: string): any {
+  // まずコードブロックを除去
+  let cleanedText = text.replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, "$1");
+  
+  // JSONの開始と終了を見つけて抽出
+  const jsonMatch = cleanedText.match(/({[\s\S]*})/);
+  if (jsonMatch) {
+    cleanedText = jsonMatch[1];
+  }
+  
+  return JSON.parse(cleanedText.trim());
+}
+
+// エラーレスポンス生成関数
+function createErrorResponse(message: string, status: number) {
+  return NextResponse.json({
+    message,
+    status: "error",
+    timestamp: new Date().toISOString()
+  }, { status });
 }
 
 export async function POST(request: Request) {
-  // デバッグ用: 環境変数が正しく読み込まれているか確認
-  console.log(
-    "SUPABASE_JWT_SECRET:",
-    process.env.SUPABASE_JWT_SECRET ? "読み込み済み" : "未設定または空",
-  );
-  console.log(
-    "NEXT_PUBLIC_SUPABASE_URL:",
-    process.env.NEXT_PUBLIC_SUPABASE_URL ? "読み込み済み" : "未設定または空",
-  );
-  console.log(
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY:",
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "読み込み済み" : "未設定または空",
-  );
+  // 開発環境でのみ環境変数の確認ログを出力
+  if (process.env.NODE_ENV === 'development') {
+    console.log(
+      "SUPABASE_JWT_SECRET:",
+      process.env.SUPABASE_JWT_SECRET ? "読み込み済み" : "未設定または空",
+    );
+    console.log(
+      "NEXT_PUBLIC_SUPABASE_URL:",
+      process.env.NEXT_PUBLIC_SUPABASE_URL ? "読み込み済み" : "未設定または空",
+    );
+    console.log(
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY:",
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "読み込み済み" : "未設定または空",
+    );
+  }
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  console.log("User in API route:", user ? user.id : "認証されていません");
-
-  if (!user) {
-    return NextResponse.json({ message: "認証が必要です。" }, { status: 401 });
+  if (process.env.NODE_ENV === 'development') {
+    console.log("User in API route:", user ? user.id : "認証されていません");
   }
 
-  const { departure, theme } = await request.json();
+  if (!user) {
+    return createErrorResponse("認証が必要です。", 401);
+  }
 
-  if (!departure || !theme) {
-    return NextResponse.json(
-      { message: "出発地とテーマは必須です。" },
-      { status: 400 },
-    );
+  let requestBody;
+  try {
+    requestBody = await request.json();
+  } catch {
+    return createErrorResponse("リクエストボディが無効です。", 400);
+  }
+
+  const { departure, theme } = requestBody;
+
+  if (!departure || !theme || typeof departure !== 'string' || typeof theme !== 'string') {
+    return createErrorResponse("出発地とテーマは文字列で必須です。", 400);
+  }
+
+  // 入力値のサニタイズ
+  const sanitizedDeparture = sanitizeInput(departure);
+  const sanitizedTheme = sanitizeInput(theme);
+
+  if (!sanitizedDeparture || !sanitizedTheme) {
+    return createErrorResponse("入力値が無効です。", 400);
   }
 
   try {
     const { text } = await generateText({
-      model: openai("gpt-4o"), // OpenAI版
-      // model: google("gemini-1.5-flash"), // Gemini版（軽量で高速、クォータ消費も少ない）
+      model: openai("gpt-4o"),
       prompt: `
         あなたは経験豊富なドライブプランナーです。
         以下の情報に基づいて、魅力的で実用的なドライブを楽しめるプランを作成してください。
 
         ## 基本情報
-        出発地: ${departure}
-        ドライブのテーマ: ${theme}
+        出発地: ${sanitizedDeparture}
+        ドライブのテーマ: ${sanitizedTheme}
 
         ## 作成する内容
-        1. **ルート**: 3〜5箇所の魅力的なスポットを含む
+        1. **ルート**: 5箇所の魅力的なスポットを含む
         2. **旅のヒント**: 具体的で実用的なアドバイスと注意点
         3. **総合情報**: ドライブ全体の概要
         4. **プラン全体のSpotifyプレイリストURL**: ドライブプラン全体に合うSpotifyのプレイリスト埋め込みURLを一つだけ生成してください。
@@ -112,11 +202,16 @@ export async function POST(request: Request) {
               "address": "おおよその住所や場所",
               "best_time": "おすすめの時間帯",
               "highlights": ["見どころ1", "見どころ2", "見どころ3"],
-              "budget_range": "金額は必ず「xxxx〜xxxx円」の形式で、日本円表記にしてください（例: 1000〜3000円)",
+              "budget_range": "予算、金額は必ず「xxxx〜xxxx円」の形式で、日本円表記にしてください（例: 1000〜3000円)",
               "parking_info": "駐車場情報",
+              "photo_prompt": "写真撮影のポイント"
             }
-            // ... 他のスポット
           ],
+          "total_duration": "総所要時間",
+          "total_distance": "総距離",
+          "best_season": "おすすめの季節",
+          "difficulty_level": "難易度レベル",
+          "recommended_start_time": "おすすめの出発時間",
           "tips": {
             "driving": "運転に関するアドバイス",
             "preparation": "事前準備のポイント",
@@ -124,53 +219,56 @@ export async function POST(request: Request) {
             "weather": "天候に関する注意点",
             "safety": "安全に関する注意事項"
           },
-          "alternative_spots": [
-            {
-              "name": "代替スポット名",
-              "reason": "代替理由（雨天時、混雑時等）"
-            }
-          ],
+          "alternative_spots": [{"name": "代替スポット名", "reason": "理由"}],
           "local_specialties": ["地域の特産品1", "地域の特産品2"],
           "photo_spots": ["写真撮影におすすめの場所1", "写真撮影におすすめの場所2"],
-          "overall_spotify_playlist": { // プラン全体用のプレイリスト
+          "overall_spotify_playlist": {
             "title": "プラン全体のプレイリストタイトル",
             "description": "プラン全体のプレイリストの説明",
-            "url": "http://googleusercontent.com/spotify.com/5" // 🚨 変更: 埋め込みURLを直接ここに
+            "url": "https://open.spotify.com/embed/playlist/37i9dQZF1DX0XUsuxWHRQd"
           }
         }
 
         ## 重要な指示
-        - 所要時間は必ず過ぎないように
-        - ルートには必ず3〜5箇所（推奨は4）のスポットを含めてください。それ以上・それ以下にならないように注意してください。
-        - 実在する場所や楽曲を基に作成してください。
-        - ○○が食べたい等のテーマには店名を表示（例：蕎麦が食べたい→実在する店名）
-        - 季節や天候を考慮したプランにしてください。
-        - 家族連れ、カップル、友人同士など、様々な層に配慮してください。
-        - 地域の文化や特色を反映させてください。
-        - 安全運転を最優先に考慮してください。
-        - 予算は幅広い層に対応できるよう配慮してください。
-        - **\`overall_spotify_playlist.url\`フィールドには、プラン全体の雰囲気やテーマに合ったSpotifyプレイリストの埋め込みURLを1つ含めてください。必ずSpotifyの「埋め込み」形式のURL（例: \`http://googleusercontent.com/spotify.com/6\`)を使用してください。**
+        - 所要時間は必ず適切に計算してください
+        - ルートは必ず5箇所のスポットを含む
+        - 実在する場所を基に作成してください
+        - ○○が食べたい等のテーマには実在する店名を表示（例：蕎麦が食べたい→実在する店名）
+        - 季節や天候を考慮したプランにしてください
+        - 家族連れ、カップル、友人同士など、様々な層に配慮してください
+        - 地域の文化や特色を反映させてください
+        - 安全運転を最優先に考慮してください
+        - 予算は幅広い層に対応できるよう配慮してください
+        - **overall_spotify_playlist.urlフィールドには、実際のSpotifyプレイリストの埋め込みURL（https://open.spotify.com/embed/playlist/PLAYLIST_ID形式）を使用してください**
+        - JSONの形式を厳密に守り、有効なJSONを生成してください
       `,
     });
 
     let generatedPlan: GeneratedPlan;
 
     try {
-      const cleanedText = text.replace(/```json\n([\s\S]*?)\n```/, "$1").trim();
-      generatedPlan = JSON.parse(cleanedText);
+      generatedPlan = parseAIResponse(text);
     } catch (parseError: unknown) {
       console.error("AIからの応答をJSONとして解析できませんでした:", parseError);
-      console.error("AIの生レスポンス:", text); // デバッグ用に生のテキストもログに残す
-      return NextResponse.json(
-        { message: "AIからの応答を解析できませんでした。" },
-        { status: 500 },
-      );
+      if (process.env.NODE_ENV === 'development') {
+        console.error("AIの生レスポンス:", text);
+      }
+      return createErrorResponse("AIからの応答を解析できませんでした。", 500);
+    }
+
+    // 生成されたプランの構造を検証
+    if (!validateGeneratedPlan(generatedPlan)) {
+      console.error("生成されたプランの構造が無効です");
+      if (process.env.NODE_ENV === 'development') {
+        console.error("無効なプラン:", generatedPlan);
+      }
+      return createErrorResponse("生成されたプランの構造が無効です。", 500);
     }
 
     const newPlan = {
       user_id: user.id,
-      departure,
-      theme,
+      departure: sanitizedDeparture,
+      theme: sanitizedTheme,
       route: generatedPlan.route,
       total_duration: generatedPlan.total_duration,
       total_distance: generatedPlan.total_distance,
@@ -192,15 +290,18 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error("プランの挿入中にエラーが発生しました:", error);
-      return NextResponse.json(
-        { message: "プランの保存に失敗しました。" },
-        { status: 500 },
-      );
+      return createErrorResponse("プランの保存に失敗しました。", 500);
     }
 
-    return NextResponse.json({ plan_id: data.id, status: "success" });
+    return NextResponse.json({ 
+      plan_id: data.id, 
+      status: "success",
+      timestamp: new Date().toISOString()
+    });
+
   } catch (error: unknown) {
     console.error("AIによるプラン生成中にエラーが発生しました:", error);
+    
     let errorMessage = "AIによるプラン生成中に不明なエラーが発生しました。";
     if (error instanceof Error) {
       errorMessage = error.message;
@@ -212,6 +313,7 @@ export async function POST(request: Request) {
     ) {
       errorMessage = (error as any).message;
     }
-    return NextResponse.json({ message: errorMessage }, { status: 500 });
+    
+    return createErrorResponse(errorMessage, 500);
   }
 }
