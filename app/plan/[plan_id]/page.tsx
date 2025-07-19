@@ -4,9 +4,10 @@ import {
   Card, CardContent, CardDescription, CardHeader, CardTitle
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { MapPin, Clock, Lightbulb } from "lucide-react"
+import { MapPin, Clock, Lightbulb, Eye, Sun, Car } from "lucide-react"
 import Link from "next/link"
 import { User } from "lucide-react"
 
@@ -32,24 +33,35 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
   }
 
   return (
-    <div className="relative min-h-screen bg-spotify-dark text-white">
+    <main className="flex min-h-screen flex-col bg-spotify-dark text-white">
       {/* ヘッダーナビゲーション */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-spotify-dark/95 backdrop-blur-sm border-b border-spotify-gray">
-        <div className="flex justify-between items-center p-4 max-w-6xl mx-auto">
-          <h1 className="text-xl font-bold text-spotify-green">Tune Drive</h1>
-          <Link
-            href="/mypage"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-spotify-lightdark hover:bg-spotify-gray transition-colors text-spotify-lightgray hover:text-white"
-          >
-            <User className="h-4 w-4" />
-            マイページ
-          </Link>
+      <header className="w-full bg-spotify-dark border-b border-spotify-gray">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="text-2xl font-bold text-spotify-green">
+              Tune Drive
+            </Link>
+            <div className="flex items-center gap-4">
+              <Link href="/plan/create">
+                <Button className="bg-spotify-green text-white hover:bg-spotify-green/90">
+                  プランを作成
+                </Button>
+              </Link>
+              <Link
+                href="/mypage"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-spotify-lightdark hover:bg-spotify-gray transition-colors text-spotify-lightgray hover:text-white"
+              >
+                <User className="h-4 w-4" />
+                <span className="hidden sm:inline">マイページ</span>
+              </Link>
+            </div>
+          </div>
         </div>
-      </div>
-      <main className="pt-24 flex flex-col items-center p-4">
+      </header>
+
+      <div className="flex-1 flex flex-col items-center p-4">
         <Card className="w-full max-w-3xl bg-spotify-lightdark border-spotify-gray text-white">
-          <CardHeader>
-            <CardTitle className="text-3xl font-bold text-spotify-green">ドライブプラン詳細</CardTitle>
+          <CardHeader>            <CardTitle className="text-3xl font-bold text-spotify-green">ドライブプラン詳細</CardTitle>
             <CardDescription className="text-spotify-lightgray">
               AIが生成したあなたのドライブプランです。
             </CardDescription>
@@ -70,27 +82,73 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
             {/* ルートをタブで表示 */}
             <h2 className="text-2xl font-bold text-spotify-green">ルート</h2>
             <Tabs defaultValue="0" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 gap-2 p-1 bg-spotify-dark rounded-lg overflow-hidden whitespace-nowrap">
-                {plan.route.map((spot: any, index: number) => (
-                  <TabsTrigger
-                    key={index}
-                    value={String(index)}
-                    className="flex-shrink-0 px-4 py-2 rounded-md text-spotify-lightgray data-[state=active]:bg-spotify-green data-[state=active]:text-white transition-all duration-200 hover:bg-spotify-lightgray/20 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                  >
-                    {index + 1}. {spot.name}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+              <div className="overflow-x-auto">
+                <TabsList className="flex w-max min-w-full gap-2 p-1 bg-spotify-dark rounded-lg">
+                  {plan.route.map((spot: any, index: number) => (
+                    <TabsTrigger
+                      key={index}
+                      value={String(index)}
+                      className="flex-shrink-0 px-3 py-2 rounded-md text-spotify-lightgray data-[state=active]:bg-spotify-green data-[state=active]:text-white transition-all duration-200 hover:bg-spotify-lightgray/20 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 text-xs sm:text-sm whitespace-nowrap"
+                    >
+                      <span className="block sm:hidden">{index + 1}</span>
+                      <span className="hidden sm:block">{index + 1}. {spot.name}</span>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </div>
 
               {plan.route.map((spot: any, index: number) => (
                 <TabsContent key={index} value={String(index)}>
                   <div className="bg-spotify-gray p-4 rounded-lg shadow-lg mt-4 border border-spotify-lightgray/20">
                     <h3 className="text-2xl font-bold text-spotify-green mb-2">{spot.name}</h3>
                     <p className="text-spotify-lightgray leading-relaxed mb-3">{spot.description}</p>
-                    <div className="flex items-center gap-2 text-spotify-lightgray text-sm mt-3">
-                      <Clock className="h-4 w-4 text-spotify-green" />
-                      <span>滞在目安: {spot.stay_minutes}分</span>
+                    
+                    {/* 基本情報を横並びに */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-spotify-lightgray text-sm mt-3 mb-4">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-spotify-green" />
+                        <span>滞在目安: {spot.stay_minutes}分</span>
+                      </div>
+                      {spot.best_time && (
+                        <div className="flex items-center gap-2">
+                          <Sun className="h-4 w-4 text-spotify-green" />
+                          <span>おすすめ時間帯: {spot.best_time}</span>
+                        </div>
+                      )}
                     </div>
+
+                    {/* 見どころ */}
+                    {spot.highlights && spot.highlights.length > 0 && (
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Eye className="h-4 w-4 text-spotify-green" />
+                          <span className="text-sm font-semibold text-spotify-green">見どころ</span>
+                        </div>
+                        <div className="bg-spotify-lightdark p-3 rounded-md border border-spotify-lightgray/10">
+                          <ul className="space-y-1">
+                            {spot.highlights.map((highlight: string, idx: number) => (
+                              <li key={idx} className="text-sm text-spotify-lightgray flex items-start gap-2">
+                                <span className="text-spotify-green text-xs mt-1">•</span>
+                                <span>{highlight}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 駐車場情報 */}
+                    {spot.parking_info && (
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Car className="h-4 w-4 text-spotify-green" />
+                          <span className="text-sm font-semibold text-spotify-green">駐車場情報</span>
+                        </div>
+                        <div className="bg-spotify-lightdark p-3 rounded-md border border-spotify-lightgray/10">
+                          <p className="text-sm text-spotify-lightgray">{spot.parking_info}</p>
+                        </div>
+                      </div>
+                    )}
 
                     {/* 各地点のGoogle Map 埋め込み */}
                     <div className="w-full h-60 rounded-lg overflow-hidden border border-spotify-lightgray/20 mt-4">
@@ -130,7 +188,7 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
             </p>
           </CardContent>
         </Card>
-      </main>
-    </div>
+      </div>
+    </main>
   )
 }
