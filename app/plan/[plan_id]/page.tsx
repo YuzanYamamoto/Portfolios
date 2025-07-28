@@ -91,7 +91,8 @@ const getMapsApiKey = (): string | null => {
 
 export async function generateMetadata({ params }: PlanDetailsPageProps): Promise<Metadata> {
   try {
-    const { plan_id } = params;
+    const awaitedParams = await params;
+    const { plan_id } = awaitedParams;
     const supabase = await createClient();
     
     const { data: plan } = await supabase
@@ -166,9 +167,9 @@ const SpotifyPlaylist = ({ playlist }: { playlist: Plan['overall_spotify_playlis
           </p>
           <div className="flex items-center gap-2 text-spotify-green hover:text-spotify-green/80 transition-colors">
             <ExternalLink className="h-4 w-4" />
-            <a 
-              href={playlist.url.replace('/embed/', '/playlist/')} 
-              target="_blank" 
+            <a
+              href={playlist.url.includes('/embed/') ? playlist.url.replace('/embed/', '/playlist/') : playlist.url}
+              target="_blank"
               rel="noopener noreferrer"
               className="text-sm underline"
               aria-label="Spotifyでプレイリストを開く"
@@ -316,7 +317,8 @@ const RouteTab = ({ spot, index, apiKey }: { spot: Spot, index: number, apiKey: 
 };
 
 export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) {
-  const { plan_id } = params;
+  const awaitedParams = await params;
+  const { plan_id } = awaitedParams;
   
   if (!plan_id || typeof plan_id !== 'string') {
     notFound();
