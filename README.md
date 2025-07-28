@@ -16,7 +16,7 @@ Next.jsとSupabaseを用いたAIドライブプラン提案アプリです。
 
 ## 🖼 サイトイメージ
 
-![アプリトップ画面](./docs/driveai_top.png)
+![アプリトップ画面](./docs/toppage.png)
 
 ---
 
