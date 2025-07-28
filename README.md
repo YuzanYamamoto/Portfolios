@@ -49,7 +49,7 @@ Next.jsとSupabaseを用いたAIドライブプラン提案アプリです。
 ## 🧩 設計ドキュメント
 
 - [要件定義・基本設計・詳細設計（Googleスプレッドシート）](https://docs.google.com/spreadsheets/d/1rRjkyOX7fHdnkOdHlvCphtfN509hnpwBLWM9iHrh3E8/edit?usp=sharing)  
-- 詳細設計時のワイヤーフレーム、ER図、ワークフロー図の画像はdocsディレクトリに格納しています。
+- 詳細設計時のワイヤーフレーム、ER図、ワークフロー図の画像はdocsディレクトリに格納しています。[こちら](./docs)
 
 ---
 
