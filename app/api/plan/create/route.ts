@@ -217,7 +217,7 @@ export async function POST(request: Request) {
           "overall_spotify_playlist": {
             "title": "プラン全体のプレイリストタイトル",
             "description": "プラン全体のプレイリストの説明",
-            "url": "https://open.spotify.com/embed/playlist/37i9dQZF1DX0XUsuxWHRQd"
+            "url": "https://open.spotify.com/embed/playlist/PLAYLIST_ID形式のURL"
           }
         }
 

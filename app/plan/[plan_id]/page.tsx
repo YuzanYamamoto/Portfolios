@@ -187,11 +187,13 @@ const SpotifyPlaylist = ({ playlist }: { playlist: Plan['overall_spotify_playlis
               src={playlist.url}
               width="100%"
               height="352"
-              frameBorder="0"
+              style={{ border: 0 }}
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
               loading="lazy"
               className="rounded-lg"
               title={`Spotifyプレイリスト: ${playlist.title}`}
+              sandbox="allow-scripts allow-same-origin allow-presentation"
+              referrerPolicy="no-referrer-when-downgrade"
             />
           </div>
         </Suspense>

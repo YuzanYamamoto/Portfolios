@@ -18,7 +18,7 @@ export default async function IndexPage() {
       <div className="w-full max-w-md space-y-6 text-center">
         <h1 className="text-5xl font-bold text-spotify-green">Tune Drive</h1>
         <p className="text-lg text-spotify-lightgray">
-          あなたのためのAIドライブプランナー。出発地とテーマを入力するだけで、おすすめのドライブコース、地図、旅のしおりPDF、プレイリストを自動生成します。
+          あなたのためのAIドライブプランナー。出発地とテーマを入力するだけで、おすすめのドライブコース、地図、Spotifyプレイリストを自動生成します。
         </p>
         <div className="space-y-4">
           <AuthButton />
