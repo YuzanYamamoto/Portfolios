@@ -208,9 +208,12 @@ export default function CreatePlanPage() {
                     }
                   }}
                 >
-                  <SelectTrigger className={`bg-spotify-gray border-spotify-gray text-white focus:ring-spotify-green ${
-                    errors.duration ? "border-red-400" : ""
-                  }`}>
+                  <SelectTrigger
+                    id="duration"
+                    className={`bg-spotify-gray border-spotify-gray text-white focus:ring-spotify-green ${
+                      errors.duration ? "border-red-400" : ""
+                    }`}
+                  >
                     <SelectValue placeholder="時間を選択してください" />
                   </SelectTrigger>
                   <SelectContent className="bg-spotify-gray border-spotify-gray">
@@ -244,9 +247,12 @@ export default function CreatePlanPage() {
                     }
                   }}
                 >
-                  <SelectTrigger className={`bg-spotify-gray border-spotify-gray text-white focus:ring-spotify-green ${
-                    errors.companion ? "border-red-400" : ""
-                  }`}>
+                  <SelectTrigger
+                    id="companion"
+                    className={`bg-spotify-gray border-spotify-gray text-white focus:ring-spotify-green ${
+                      errors.companion ? "border-red-400" : ""
+                    }`}
+                  >
                     <SelectValue placeholder="同行者を選択してください" />
                   </SelectTrigger>
                   <SelectContent className="bg-spotify-gray border-spotify-gray">
