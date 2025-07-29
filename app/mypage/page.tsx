@@ -95,21 +95,14 @@ function PlanHistorySection({ plans }: { plans: Plan[] | null }) {
                     {formatDate(plan.created_at)}
                   </time>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <Link href={`/plan/${plan.id}`} passHref>
-                    <Button 
-                      className="w-full bg-spotify-green text-white hover:bg-spotify-green/90 transition-colors"
-                      aria-label={`${plan.theme}のプラン詳細を見る`}
-                    >
-                      プラン詳細を見る
-                    </Button>
-                  </Link>
-                  <form method="post" action={`/api/spotify/playlist/create?plan_id=${plan.id}`} className="w-full">
-                    <Button type="submit" className="w-full bg-spotify-dark text-white border border-spotify-green hover:bg-spotify-green/80 mt-1" aria-label="このプラン用プレイリストを自動生成">
-                      このプラン用プレイリストを自動生成
-                    </Button>
-                  </form>
-                </div>
+                <Link href={`/plan/${plan.id}`} passHref>
+                  <Button 
+                    className="w-full bg-spotify-green text-white hover:bg-spotify-green/90 transition-colors"
+                    aria-label={`${plan.theme}のプラン詳細を見る`}
+                  >
+                    プラン詳細を見る
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           ))}
