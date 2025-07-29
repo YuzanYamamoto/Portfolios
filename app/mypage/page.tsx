@@ -208,11 +208,38 @@ async function SpotifyPlaylistSection({ searchParams }: { searchParams: any }) {
   let debugInfo = ""
   
   if (user) {
-    const { data, error } = await supabase
+    // まずユーザーレコードが存在するかチェック
+    let { data, error } = await supabase
       .from("users")
       .select("spotify_access_token, spotify_refresh_token, spotify_token_expires_at")
       .eq("id", user.id)
-      .single()
+      .maybeSingle() // singleの代わりにmaybeSingleを使用
+    
+    // ユーザーレコードが存在しない場合は作成
+    if (!data && !error) {
+      console.log("ユーザーレコードが存在しないため作成します:", user.id)
+      const { error: insertError } = await supabase
+        .from("users")
+        .insert({
+          id: user.id,
+          email: user.email
+        })
+      
+      if (insertError) {
+        console.error("ユーザーレコード作成エラー:", insertError)
+        errorMsg = `ユーザーレコードの作成に失敗しました: ${insertError.message}`
+        debugInfo = `ユーザーID: ${user.id.substring(0, 8)}..., レコード作成エラー: ${insertError.message}`
+      } else {
+        // 作成後に再度取得
+        const result = await supabase
+          .from("users")
+          .select("spotify_access_token, spotify_refresh_token, spotify_token_expires_at")
+          .eq("id", user.id)
+          .single()
+        data = result.data
+        error = result.error
+      }
+    }
     
     // デバッグ情報を追加
     debugInfo = `ユーザーID: ${user.id.substring(0, 8)}..., データ取得エラー: ${error ? 'あり' : 'なし'}, トークン存在: ${data?.spotify_access_token ? 'あり' : 'なし'}`

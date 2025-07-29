@@ -25,11 +25,40 @@ export async function POST(req: NextRequest) {
   }
 
   // ユーザーのSpotifyトークン取得
-  const { data: userRow, error: userError } = await supabase
+  let { data: userRow, error: userError } = await supabase
     .from("users")
     .select("spotify_access_token")
     .eq("id", user.id)
-    .single()
+    .maybeSingle() // singleの代わりにmaybeSingleを使用
+  
+  // ユーザーレコードが存在しない場合は作成
+  if (!userRow && !userError) {
+    console.log("ユーザーレコードが存在しないため作成します:", user.id)
+    const { error: insertError } = await supabase
+      .from("users")
+      .insert({
+        id: user.id,
+        email: user.email
+      })
+    
+    if (insertError) {
+      console.error("ユーザーレコード作成エラー:", insertError)
+      return NextResponse.json({ 
+        error: "ユーザーレコードの作成に失敗しました", 
+        details: insertError,
+        debug: { userId: user.id }
+      }, { status: 400 })
+    } else {
+      // 作成後に再度取得
+      const result = await supabase
+        .from("users")
+        .select("spotify_access_token")
+        .eq("id", user.id)
+        .single()
+      userRow = result.data
+      userError = result.error
+    }
+  }
   
   console.log("ユーザーデータ取得結果:", { 
     userRow: userRow ? { 
