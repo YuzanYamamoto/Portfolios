@@ -25,13 +25,22 @@ export async function POST(req: NextRequest) {
   }
 
   // ユーザーのSpotifyトークン取得
-  const { data: userRow } = await supabase
+  const { data: userRow, error: userError } = await supabase
     .from("users")
     .select("spotify_access_token")
     .eq("id", user.id)
     .single()
+  
+  console.log("ユーザーデータ取得結果:", { userRow, userError })
+  
+  if (userError) {
+    console.error("ユーザーデータ取得エラー:", userError)
+    return NextResponse.json({ error: "ユーザーデータの取得に失敗しました", details: userError }, { status: 400 })
+  }
+  
   if (!userRow || !userRow.spotify_access_token) {
-    return NextResponse.json({ error: "Spotifyトークンが見つかりません" }, { status: 400 })
+    console.log("Spotifyトークンが見つかりません:", userRow)
+    return NextResponse.json({ error: "Spotifyトークンが見つかりません", needsAuth: true }, { status: 400 })
   }
 
   try {
@@ -43,7 +52,8 @@ export async function POST(req: NextRequest) {
     })
     const userProfile = await userProfileRes.json()
     if (!userProfileRes.ok) {
-      return NextResponse.json({ error: "Spotifyユーザー情報の取得に失敗しました" }, { status: 400 })
+      console.error("Spotifyユーザー情報取得エラー:", userProfile)
+      return NextResponse.json({ error: "Spotifyユーザー情報の取得に失敗しました", details: userProfile }, { status: 400 })
     }
 
     // プレイリストのタイトルと説明を取得
