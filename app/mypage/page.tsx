@@ -167,6 +167,9 @@ function SpotifyErrorMessage({ searchParams }: { searchParams: any }) {
     case "update":
       errorMessage = "トークンの保存に失敗しました。再度お試しください。"
       break
+    case "server":
+      errorMessage = "サーバーエラーが発生しました。しばらく時間をおいて再度お試しください。"
+      break
     default:
       if (errorDescription) {
         errorMessage = `Spotify連携エラー: ${decodeURIComponent(errorDescription)}`
