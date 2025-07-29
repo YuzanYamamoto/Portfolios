@@ -148,8 +148,11 @@ const GoogleMapEmbed = ({ spot, apiKey }: { spot: Spot, apiKey: string | null })
 };
 
 // Spotifyプレイリストコンポーネント
-const SpotifyPlaylist = ({ playlist }: { playlist: Plan['overall_spotify_playlist'] }) => {
+const SpotifyPlaylist = ({ playlist, planId }: { playlist: Plan['overall_spotify_playlist'], planId: string }) => {
   if (!playlist) return null;
+  
+  const hasValidUrl = playlist.url && playlist.url.trim() !== "" && !playlist.url.includes('[PLAYLIST_ID]');
+  
   return (
     <>
       <div className="flex items-center gap-2 mb-4">
@@ -164,39 +167,82 @@ const SpotifyPlaylist = ({ playlist }: { playlist: Plan['overall_spotify_playlis
           <p className="text-spotify-lightgray text-sm mb-3">
             {playlist.description}
           </p>
-          <div className="flex items-center gap-2 text-spotify-green hover:text-spotify-green/80 transition-colors">
-            <ExternalLink className="h-4 w-4" />
-            <a
-              href={playlist.url.includes('/embed/') ? playlist.url.replace('/embed/', '/playlist/') : playlist.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm underline"
-              aria-label="Spotifyでプレイリストを開く"
-            >
-              Spotifyで開く
-            </a>
-          </div>
+          
+          {hasValidUrl ? (
+            <div className="flex items-center gap-2 text-spotify-green hover:text-spotify-green/80 transition-colors">
+              <ExternalLink className="h-4 w-4" />
+              <a
+                href={playlist.url.includes('/embed/') ? playlist.url.replace('/embed/', '/playlist/') : playlist.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm underline"
+                aria-label="Spotifyでプレイリストを開く"
+              >
+                Spotifyで開く
+              </a>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={async () => {
+                  try {
+                    const response = await fetch(`/api/spotify/playlist/create?plan_id=${planId}`, {
+                      method: 'POST'
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                      // ページをリロードして更新されたプレイリストを表示
+                      window.location.reload();
+                    } else {
+                      alert('プレイリストの作成に失敗しました: ' + result.error);
+                    }
+                  } catch (error) {
+                    alert('プレイリストの作成中にエラーが発生しました');
+                  }
+                }}
+                className="bg-spotify-green text-white hover:bg-spotify-green/90 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                Spotifyプレイリストを作成
+              </button>
+              <p className="text-spotify-lightgray text-xs">
+                ※Spotifyアカウントでログインが必要です
+              </p>
+            </div>
+          )}
         </div>
-        <Suspense fallback={
-          <div className="w-full h-[352px] bg-spotify-lightdark rounded-lg flex items-center justify-center">
-            <p className="text-spotify-lightgray">プレイリストを読み込んでいます...</p>
+        
+        {hasValidUrl ? (
+          <Suspense fallback={
+            <div className="w-full h-[352px] bg-spotify-lightdark rounded-lg flex items-center justify-center">
+              <p className="text-spotify-lightgray">プレイリストを読み込んでいます...</p>
+            </div>
+          }>
+            <div className="w-full rounded-lg overflow-hidden">
+              <iframe
+                src={playlist.url}
+                width="100%"
+                height="352"
+                style={{ border: 0 }}
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+                className="rounded-lg"
+                title={`Spotifyプレイリスト: ${playlist.title}`}
+                sandbox="allow-scripts allow-same-origin allow-presentation"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+          </Suspense>
+        ) : (
+          <div className="w-full h-[352px] bg-spotify-lightdark rounded-lg flex flex-col items-center justify-center gap-4">
+            <Music className="h-12 w-12 text-spotify-lightgray" />
+            <div className="text-center">
+              <p className="text-spotify-lightgray text-lg mb-2">プレイリストが未作成です</p>
+              <p className="text-spotify-lightgray text-sm">
+                上のボタンをクリックしてSpotifyプレイリストを作成してください
+              </p>
+            </div>
           </div>
-        }>
-          <div className="w-full rounded-lg overflow-hidden">
-            <iframe
-              src={playlist.url}
-              width="100%"
-              height="352"
-              style={{ border: 0 }}
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              loading="lazy"
-              className="rounded-lg"
-              title={`Spotifyプレイリスト: ${playlist.title}`}
-              sandbox="allow-scripts allow-same-origin allow-presentation"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-          </div>
-        </Suspense>
+        )}
       </div>
       <Separator className="bg-spotify-gray" />
     </>
@@ -438,7 +484,7 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
             <Separator className="bg-spotify-gray" />
 
             {/* Spotifyプレイリスト */}
-            <SpotifyPlaylist playlist={planData.overall_spotify_playlist} />
+            <SpotifyPlaylist playlist={planData.overall_spotify_playlist} planId={params.plan_id} />
             
             {/* 曲順編集UI（クライアントコンポーネント） */}
             <Suspense fallback={<div>曲順エディタを読み込み中...</div>}>

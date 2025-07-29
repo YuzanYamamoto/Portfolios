@@ -242,10 +242,7 @@ export async function POST(request: Request) {
         ## Spotifyプレイリストに関する詳細指示
         - **overall_spotify_playlist.title**: ドライブのテーマと雰囲気に合った魅力的なタイトルを作成してください
         - **overall_spotify_playlist.description**: プレイリストの特徴、どんな場面で聴くべきか、楽曲の傾向などを詳しく説明してください
-        - **overall_spotify_playlist.url**: 自動生成したSpotifyプレイリストの埋め込みURLを生成してください
-          - 形式: https://open.spotify.com/embed/playlist/[PLAYLIST_ID]
-          - ドライブのテーマに合った既存の人気プレイリストのIDを使用してください
-          - 例: 海沿いドライブなら爽やかな楽曲のプレイリスト、山道ドライブなら自然系の楽曲のプレイリストなど
+        - **overall_spotify_playlist.url**: 空文字列 "" を設定してください（後でSpotify APIで実際のプレイリストを作成します）
         - **overall_spotify_playlist.tracks**: 10-15曲程度の楽曲リストを生成してください
           - 実在するアーティストと楽曲名を使用してください
           - ドライブのテーマ（海沿い、山道、都市部、夜景など）に合った楽曲を選択してください
@@ -253,7 +250,6 @@ export async function POST(request: Request) {
           - 各楽曲について、なぜその楽曲を選んだのか、ドライブのどの場面に合うかを説明してください
           - 邦楽・洋楽のバランスを考慮してください
           - 幅広い年代に受け入れられる楽曲を中心に選択してください
-          - 選択した楽曲は、指定したプレイリストURLに含まれている可能性が高い楽曲を優先してください
         
         - JSONの形式を厳密に守り、有効なJSONを生成してください
       `,
