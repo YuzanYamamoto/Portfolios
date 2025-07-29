@@ -163,9 +163,16 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
   }
   const planData = plan as Plan;
   return (
-    <main className="flex min-h-screen flex-col bg-spotify-dark text-white">
+    <main className="relative min-h-screen bg-gradient-to-br from-spotify-dark via-gray-900/20 to-spotify-dark text-white overflow-hidden">
+      {/* 背景アニメーション */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-spotify-green/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gray-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gray-500/5 rounded-full blur-3xl animate-pulse delay-2000"></div>
+      </div>
+
       {/* ヘッダーナビゲーション */}
-      <header className="fixed top-0 left-0 right-0 w-full bg-spotify-dark border-b border-spotify-gray z-50" role="banner">
+      <header className="fixed top-0 left-0 right-0 w-full bg-spotify-dark/80 backdrop-blur-md border-b border-spotify-gray z-50" role="banner">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="text-2xl font-bold text-spotify-green">
@@ -188,8 +195,8 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col items-center p-4 pt-20">
-        <Card className="w-full max-w-4xl bg-spotify-lightdark border-spotify-gray text-white">
+      <div className="flex-1 flex flex-col items-center p-4 pt-20 relative z-10">
+        <Card className="w-full max-w-4xl bg-spotify-lightdark/80 backdrop-blur-md border-spotify-gray text-white shadow-2xl">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-spotify-green">ドライブプラン詳細</CardTitle>
             <CardDescription className="text-spotify-lightgray">
@@ -220,21 +227,24 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
 
             {/* スポット別タブ */}
             <Tabs defaultValue="spot-0" className="w-full">
-              <TabsList className="grid w-full bg-spotify-gray overflow-x-auto" style={{ gridTemplateColumns: `repeat(${planData.route.length}, minmax(120px, 1fr))` }}>
+              <TabsList className="grid w-full bg-spotify-gray overflow-x-auto" style={{ gridTemplateColumns: `repeat(${planData.route.length}, minmax(40px, 1fr))` }}>
                 {planData.route.map((spot, index) => (
                   <TabsTrigger 
                     key={index} 
                     value={`spot-${index}`} 
                     className="data-[state=active]:bg-spotify-green text-xs px-2 py-1 whitespace-nowrap"
                   >
-                    {index + 1}. {spot.name.length > 8 ? spot.name.substring(0, 8) + '...' : spot.name}
+                    <span className="sm:hidden">{index + 1}</span>
+                    <span className="hidden sm:inline">
+                      {index + 1}. {spot.name.length > 8 ? spot.name.substring(0, 8) + '...' : spot.name}
+                    </span>
                   </TabsTrigger>
                 ))}
               </TabsList>
 
               {planData.route.map((spot, index) => (
                 <TabsContent key={index} value={`spot-${index}`} className="space-y-4">
-                  <Card className="bg-spotify-gray border-spotify-lightgray/20">
+                  <Card className="bg-spotify-gray/50 backdrop-blur-sm border-spotify-lightgray/20">
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div>
@@ -394,69 +404,69 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
 
             {/* アドバイス（Spotifyプレイリストの下に移動） */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-4">
-                <Lightbulb className="h-6 w-6 text-spotify-green" />
-                <h2 className="text-2xl font-bold text-spotify-green">ドライブのアドバイス</h2>
+              <div className="flex items-center gap-2">
+                <Lightbulb className="h-5 w-5 text-spotify-green" />
+                <h2 className="text-xl font-bold text-spotify-green">ドライブのアドバイス</h2>
               </div>
               
-              <div className="grid gap-4">
-                <Card className="bg-spotify-gray border-spotify-lightgray/20">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-spotify-green">
-                      <Car className="h-5 w-5" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Card className="bg-spotify-lightdark/80 backdrop-blur-sm border-spotify-lightgray/20 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-spotify-green text-sm">
+                      <Car className="h-4 w-4" />
                       運転のコツ
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-white">{planData.tips.driving}</p>
+                  <CardContent className="pt-0">
+                    <p className="text-white text-sm">{planData.tips.driving}</p>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-spotify-gray border-spotify-lightgray/20">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-spotify-green">
-                      <Lightbulb className="h-5 w-5" />
+                <Card className="bg-spotify-lightdark/80 backdrop-blur-sm border-spotify-lightgray/20 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-spotify-green text-sm">
+                      <Lightbulb className="h-4 w-4" />
                       事前準備
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-white">{planData.tips.preparation}</p>
+                  <CardContent className="pt-0">
+                    <p className="text-white text-sm">{planData.tips.preparation}</p>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-spotify-gray border-spotify-lightgray/20">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-spotify-green">
-                      <Wallet className="h-5 w-5" />
+                <Card className="bg-spotify-lightdark/80 backdrop-blur-sm border-spotify-lightgray/20 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-spotify-green text-sm">
+                      <Wallet className="h-4 w-4" />
                       予算について
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-white">{planData.tips.budget}</p>
+                  <CardContent className="pt-0">
+                    <p className="text-white text-sm">{planData.tips.budget}</p>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-spotify-gray border-spotify-lightgray/20">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-spotify-green">
-                      <Sun className="h-5 w-5" />
+                <Card className="bg-spotify-lightdark/80 backdrop-blur-sm border-spotify-lightgray/20 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-spotify-green text-sm">
+                      <Sun className="h-4 w-4" />
                       天候について
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-white">{planData.tips.weather}</p>
+                  <CardContent className="pt-0">
+                    <p className="text-white text-sm">{planData.tips.weather}</p>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-spotify-gray border-spotify-lightgray/20">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-spotify-green">
-                      <AlertCircle className="h-5 w-5" />
+                <Card className="bg-spotify-lightdark/80 backdrop-blur-sm border-spotify-lightgray/20 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg md:col-span-2">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-spotify-green text-sm">
+                      <AlertCircle className="h-4 w-4" />
                       安全について
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-white">{planData.tips.safety}</p>
+                  <CardContent className="pt-0">
+                    <p className="text-white text-sm">{planData.tips.safety}</p>
                   </CardContent>
                 </Card>
               </div>

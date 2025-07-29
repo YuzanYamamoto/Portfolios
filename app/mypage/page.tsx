@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { MapPin, CalendarDays, Music, AlertCircle } from "lucide-react"
+import { MapPin, CalendarDays, Music, AlertCircle, Car, Sparkles } from "lucide-react"
 import { logout } from "@/app/actions/logout"
 
 
@@ -74,10 +74,13 @@ function PlanHistorySection({ plans }: { plans: Plan[] | null }) {
       <Separator className="bg-spotify-gray mb-4" />
       {plans && plans.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {plans.map((plan) => (
+          {plans.map((plan, index) => (
             <Card 
               key={plan.id} 
-              className="bg-spotify-gray border-spotify-dark text-white hover:bg-spotify-gray/80 transition-colors"
+              className="bg-spotify-gray/50 backdrop-blur-sm border-spotify-dark text-white hover:bg-spotify-gray/70 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg"
+              style={{
+                animationDelay: `${index * 100}ms`
+              }}
             >
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg text-spotify-green line-clamp-2">
@@ -97,7 +100,7 @@ function PlanHistorySection({ plans }: { plans: Plan[] | null }) {
                 </div>
                 <Link href={`/plan/${plan.id}`} passHref>
                   <Button 
-                    className="w-full bg-spotify-green text-white hover:bg-spotify-green/90 transition-colors"
+                    className="w-full bg-gradient-to-r from-spotify-green to-green-400 text-white hover:from-spotify-green/90 hover:to-green-400/90 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg font-semibold"
                     aria-label={`${plan.theme}のプラン詳細を見る`}
                   >
                     プラン詳細を見る
@@ -374,12 +377,19 @@ export default async function MyPage({ searchParams }: MyPageProps) {
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-spotify-dark text-white">
+    <main className="relative min-h-screen bg-gradient-to-br from-spotify-dark via-gray-900/20 to-spotify-dark text-white overflow-hidden">
+      {/* 背景アニメーション */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-spotify-green/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gray-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gray-500/5 rounded-full blur-3xl animate-pulse delay-2000"></div>
+      </div>
+
       <PageHeader />
 
       {/* メインコンテンツ */}
-      <div className="flex-1 flex flex-col items-center p-4 pt-20">
-        <Card className="w-full max-w-4xl bg-spotify-lightdark border-spotify-gray text-white mt-8">
+      <div className="flex-1 flex flex-col items-center p-4 pt-20 relative z-10">
+        <Card className="w-full max-w-4xl bg-spotify-lightdark/80 backdrop-blur-md border-spotify-gray text-white mt-8 shadow-2xl transform transition-all duration-300 hover:scale-[1.01]">
           <CardHeader>
             <UserHeader user={user} />
           </CardHeader>
