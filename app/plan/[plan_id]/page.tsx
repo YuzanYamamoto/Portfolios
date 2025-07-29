@@ -273,75 +273,79 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
 
             <Separator className="bg-spotify-gray" />
 
-            {/* プラン詳細情報 */}
-            <Tabs defaultValue="route" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-spotify-gray">
-                <TabsTrigger value="route" className="data-[state=active]:bg-spotify-green">
-                  ルート詳細
-                </TabsTrigger>
-                <TabsTrigger value="tips" className="data-[state=active]:bg-spotify-green">
+            {/* スポット別タブ */}
+            <Tabs defaultValue="spot-0" className="w-full">
+              <TabsList className="grid w-full bg-spotify-gray overflow-x-auto" style={{ gridTemplateColumns: `repeat(${planData.route.length + 2}, minmax(120px, 1fr))` }}>
+                {planData.route.map((spot, index) => (
+                  <TabsTrigger 
+                    key={index} 
+                    value={`spot-${index}`} 
+                    className="data-[state=active]:bg-spotify-green text-xs px-2 py-1 whitespace-nowrap"
+                  >
+                    {index + 1}. {spot.name.length > 8 ? spot.name.substring(0, 8) + '...' : spot.name}
+                  </TabsTrigger>
+                ))}
+                <TabsTrigger value="tips" className="data-[state=active]:bg-spotify-green text-xs px-2 py-1">
                   アドバイス
                 </TabsTrigger>
-                <TabsTrigger value="info" className="data-[state=active]:bg-spotify-green">
+                <TabsTrigger value="info" className="data-[state=active]:bg-spotify-green text-xs px-2 py-1">
                   追加情報
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="route" className="space-y-4">
-                <div className="space-y-4">
-                  {planData.route.map((spot, index) => (
-                    <Card key={index} className="bg-spotify-gray border-spotify-lightgray/20">
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <CardTitle className="text-lg text-spotify-green">
-                              {index + 1}. {spot.name}
-                            </CardTitle>
-                            <CardDescription className="text-spotify-lightgray">
-                              {spot.category} • {spot.stay_minutes}分滞在
-                            </CardDescription>
-                          </div>
-                          <Badge variant="outline" className="text-spotify-lightgray border-spotify-lightgray">
-                            {spot.best_time}
-                          </Badge>
+              {planData.route.map((spot, index) => (
+                <TabsContent key={index} value={`spot-${index}`} className="space-y-4">
+                  <Card className="bg-spotify-gray border-spotify-lightgray/20">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CardTitle className="text-xl text-spotify-green">
+                            {index + 1}. {spot.name}
+                          </CardTitle>
+                          <CardDescription className="text-spotify-lightgray">
+                            {spot.category} • {spot.stay_minutes}分滞在
+                          </CardDescription>
                         </div>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <p className="text-white">{spot.description}</p>
-                        
-                        <div className="flex items-center gap-2 text-sm text-spotify-lightgray">
-                          <MapPin className="h-4 w-4" />
-                          <span>{spot.address}</span>
+                        <Badge variant="outline" className="text-spotify-lightgray border-spotify-lightgray">
+                          {spot.best_time}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-white text-lg">{spot.description}</p>
+                      
+                      <div className="flex items-center gap-2 text-spotify-lightgray">
+                        <MapPin className="h-5 w-5" />
+                        <span>{spot.address}</span>
+                      </div>
+
+                      {spot.highlights && spot.highlights.length > 0 && (
+                        <div>
+                          <h4 className="text-lg font-semibold text-spotify-green mb-3">見どころ:</h4>
+                          <ul className="list-disc list-inside space-y-2 text-spotify-lightgray">
+                            {spot.highlights.map((highlight, idx) => (
+                              <li key={idx}>{highlight}</li>
+                            ))}
+                          </ul>
                         </div>
+                      )}
 
-                        {spot.highlights && spot.highlights.length > 0 && (
-                          <div>
-                            <h4 className="text-sm font-semibold text-spotify-green mb-2">見どころ:</h4>
-                            <ul className="list-disc list-inside space-y-1 text-sm text-spotify-lightgray">
-                              {spot.highlights.map((highlight, idx) => (
-                                <li key={idx}>{highlight}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                          <div className="flex items-center gap-2">
-                            <Wallet className="h-4 w-4 text-spotify-green" />
-                            <span className="text-spotify-lightgray">予算: {spot.budget_range}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Car className="h-4 w-4 text-spotify-green" />
-                            <span className="text-spotify-lightgray">駐車場: {spot.parking_info}</span>
-                          </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex items-center gap-2">
+                          <Wallet className="h-5 w-5 text-spotify-green" />
+                          <span className="text-white">予算: {spot.budget_range}</span>
                         </div>
+                        <div className="flex items-center gap-2">
+                          <Car className="h-5 w-5 text-spotify-green" />
+                          <span className="text-white">駐車場: {spot.parking_info}</span>
+                        </div>
+                      </div>
 
-                        <GoogleMapEmbed spot={spot} apiKey={getMapsApiKey()} />
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
+                      <GoogleMapEmbed spot={spot} apiKey={getMapsApiKey()} />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              ))}
 
               <TabsContent value="tips" className="space-y-4">
                 <div className="grid gap-4">
