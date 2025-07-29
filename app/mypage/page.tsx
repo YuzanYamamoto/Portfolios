@@ -143,7 +143,62 @@ async function fetchSpotifyPlaylists(token: string) {
   return data.items as Array<{ id: string, name: string, images: any[] }>
 }
 
-async function SpotifyPlaylistSection() {
+function SpotifyErrorMessage({ searchParams }: { searchParams: any }) {
+  const spotifyError = searchParams?.spotify_error
+  const errorDescription = searchParams?.error_description
+
+  if (!spotifyError) return null
+
+  let errorMessage = "Spotify連携でエラーが発生しました。"
+  
+  switch (spotifyError) {
+    case "oauth":
+      errorMessage = "Spotify認証がキャンセルされました。"
+      break
+    case "config":
+      errorMessage = "Spotify設定に問題があります。管理者にお問い合わせください。"
+      break
+    case "invalid_client":
+      errorMessage = "Spotifyクライアント設定が無効です。管理者にお問い合わせください。"
+      break
+    case "auth":
+      errorMessage = "ユーザー認証に失敗しました。再度ログインしてください。"
+      break
+    case "update":
+      errorMessage = "トークンの保存に失敗しました。再度お試しください。"
+      break
+    default:
+      if (errorDescription) {
+        errorMessage = `Spotify連携エラー: ${decodeURIComponent(errorDescription)}`
+      }
+  }
+
+  return (
+    <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4 mb-4">
+      <div className="flex items-center gap-2">
+        <AlertCircle className="h-5 w-5 text-red-400" />
+        <p className="text-red-400">{errorMessage}</p>
+      </div>
+    </div>
+  )
+}
+
+function SpotifySuccessMessage({ searchParams }: { searchParams: any }) {
+  const spotifySuccess = searchParams?.spotify_success
+
+  if (!spotifySuccess) return null
+
+  return (
+    <div className="bg-green-900/20 border border-green-500/50 rounded-lg p-4 mb-4">
+      <div className="flex items-center gap-2">
+        <Music className="h-5 w-5 text-green-400" />
+        <p className="text-green-400">Spotify連携が完了しました！</p>
+      </div>
+    </div>
+  )
+}
+
+async function SpotifyPlaylistSection({ searchParams }: { searchParams: any }) {
   // SupabaseからユーザーのSpotifyトークンを取得
   const supabase = await createClient()
   const {
@@ -233,7 +288,11 @@ function PageHeader() {
   )
 }
 
-export default async function MyPage() {
+interface MyPageProps {
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
+export default async function MyPage({ searchParams }: MyPageProps) {
   const supabase = await createClient()
   
   const {
@@ -285,9 +344,11 @@ export default async function MyPage() {
           </CardHeader>
           
           <CardContent className="space-y-8">
+            <SpotifyErrorMessage searchParams={searchParams} />
+            <SpotifySuccessMessage searchParams={searchParams} />
             <PlanHistorySection plans={plans} />
             <Separator className="bg-spotify-gray" />
-            <SpotifyPlaylistSection />
+            <SpotifyPlaylistSection searchParams={searchParams} />
           </CardContent>
         </Card>
       </div>

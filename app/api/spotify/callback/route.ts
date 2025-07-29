@@ -7,12 +7,32 @@ const client_secret = process.env.SPOTIFY_CLIENT_SECRET!
 export async function GET(req: NextRequest) {
   const url = new URL(req.url)
   const code = url.searchParams.get("code")
+  const error = url.searchParams.get("error")
+  
+  // Spotifyからエラーが返された場合
+  if (error) {
+    console.error("Spotify OAuth error:", error)
+    return NextResponse.redirect("/mypage?spotify_error=oauth")
+  }
+  
   if (!code) {
     return NextResponse.json({ error: "No code provided" }, { status: 400 })
   }
 
+  // 環境変数の確認
+  if (!client_id || !client_secret) {
+    console.error("Spotify credentials not set:", { 
+      client_id: client_id ? "Set" : "Not set",
+      client_secret: client_secret ? "Set" : "Not set"
+    })
+    return NextResponse.redirect("/mypage?spotify_error=config")
+  }
+
   // 動的にredirect URIを生成
   const redirect_uri = `${url.protocol}//${url.host}/api/spotify/callback`
+
+  console.log("Spotify Callback - Redirect URI:", redirect_uri)
+  console.log("Spotify Callback - Client ID:", client_id ? "Set" : "Not set")
 
   const params = new URLSearchParams()
   params.append("grant_type", "authorization_code")
@@ -31,7 +51,8 @@ export async function GET(req: NextRequest) {
 
   const data = await res.json()
   if (data.error) {
-    return NextResponse.json({ error: data.error }, { status: 400 })
+    console.error("Spotify token error:", data)
+    return NextResponse.redirect(`/mypage?spotify_error=${data.error}&error_description=${encodeURIComponent(data.error_description || '')}`)
   }
 
   // --- ここからSupabaseに保存 ---
