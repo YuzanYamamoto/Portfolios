@@ -304,7 +304,7 @@ async function SpotifyPlaylistSection({ searchParams }: { searchParams: any }) {
 
 function PageHeader() {
   return (
-    <header className="w-full bg-spotify-dark border-b border-spotify-gray">
+    <header className="fixed top-0 left-0 right-0 w-full bg-spotify-dark border-b border-spotify-gray z-50">
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link 
@@ -378,7 +378,7 @@ export default async function MyPage({ searchParams }: MyPageProps) {
       <PageHeader />
 
       {/* メインコンテンツ */}
-      <div className="flex-1 flex flex-col items-center p-4">
+      <div className="flex-1 flex flex-col items-center p-4 pt-20">
         <Card className="w-full max-w-4xl bg-spotify-lightdark border-spotify-gray text-white mt-8">
           <CardHeader>
             <UserHeader user={user} />

@@ -165,7 +165,7 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
   return (
     <main className="flex min-h-screen flex-col bg-spotify-dark text-white">
       {/* ヘッダーナビゲーション */}
-      <header className="w-full bg-spotify-dark border-b border-spotify-gray" role="banner">
+      <header className="fixed top-0 left-0 right-0 w-full bg-spotify-dark border-b border-spotify-gray z-50" role="banner">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="text-2xl font-bold text-spotify-green">
@@ -188,7 +188,7 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col items-center p-4">
+      <div className="flex-1 flex flex-col items-center p-4 pt-20">
         <Card className="w-full max-w-4xl bg-spotify-lightdark border-spotify-gray text-white">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-spotify-green">ドライブプラン詳細</CardTitle>

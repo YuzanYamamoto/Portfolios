@@ -161,7 +161,7 @@ export default function CreatePlanPage() {
   return (
     <div className="relative min-h-screen bg-spotify-dark text-white">
       {/* ヘッダーナビゲーション */}
-      <header className="w-full bg-spotify-dark border-b border-spotify-gray">
+      <header className="fixed top-0 left-0 right-0 w-full bg-spotify-dark border-b border-spotify-gray z-50">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="text-2xl font-bold text-spotify-green">
