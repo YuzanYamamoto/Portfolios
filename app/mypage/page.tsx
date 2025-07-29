@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator"
 import { MapPin, CalendarDays, Music, AlertCircle } from "lucide-react"
 import { logout } from "@/app/actions/logout"
 
+
 interface Plan {
   id: string
   departure: string
@@ -71,7 +72,6 @@ function PlanHistorySection({ plans }: { plans: Plan[] | null }) {
         ドライブプラン履歴
       </h2>
       <Separator className="bg-spotify-gray mb-4" />
-      
       {plans && plans.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {plans.map((plan) => (
@@ -95,14 +95,21 @@ function PlanHistorySection({ plans }: { plans: Plan[] | null }) {
                     {formatDate(plan.created_at)}
                   </time>
                 </div>
-                <Link href={`/plan/${plan.id}`} passHref>
-                  <Button 
-                    className="w-full bg-spotify-green text-white hover:bg-spotify-green/90 transition-colors"
-                    aria-label={`${plan.theme}のプラン詳細を見る`}
-                  >
-                    プラン詳細を見る
-                  </Button>
-                </Link>
+                <div className="flex flex-col gap-2">
+                  <Link href={`/plan/${plan.id}`} passHref>
+                    <Button 
+                      className="w-full bg-spotify-green text-white hover:bg-spotify-green/90 transition-colors"
+                      aria-label={`${plan.theme}のプラン詳細を見る`}
+                    >
+                      プラン詳細を見る
+                    </Button>
+                  </Link>
+                  <form method="post" action={`/api/spotify/playlist/create?plan_id=${plan.id}`} className="w-full">
+                    <Button type="submit" className="w-full bg-spotify-dark text-white border border-spotify-green hover:bg-spotify-green/80 mt-1" aria-label="このプラン用プレイリストを自動生成">
+                      このプラン用プレイリストを自動生成
+                    </Button>
+                  </form>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -123,7 +130,43 @@ function PlanHistorySection({ plans }: { plans: Plan[] | null }) {
   )
 }
 
-function SpotifyPlaylistSection() {
+import { cookies } from "next/headers"
+
+async function fetchSpotifyPlaylists(token: string) {
+  const res = await fetch("https://api.spotify.com/v1/me/playlists", {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+  if (!res.ok) return null
+  const data = await res.json()
+  return data.items as Array<{ id: string, name: string, images: any[] }>
+}
+
+async function SpotifyPlaylistSection() {
+  // SupabaseからユーザーのSpotifyトークンを取得
+  const supabase = await createClient()
+  const {
+    data: { user }
+  } = await supabase.auth.getUser()
+  let playlists = null
+  let errorMsg = ""
+  if (user) {
+    const { data, error } = await supabase
+      .from("users")
+      .select("spotify_access_token")
+      .eq("id", user.id)
+      .single()
+    if (data && data.spotify_access_token) {
+      playlists = await fetchSpotifyPlaylists(data.spotify_access_token)
+      if (!playlists) errorMsg = "Spotifyプレイリストの取得に失敗しました。"
+    } else {
+      errorMsg = "Spotify連携が未完了です。"
+    }
+  } else {
+    errorMsg = "ログインが必要です。"
+  }
+
   return (
     <section>
       <h2 className="text-2xl font-bold text-spotify-green mb-4">
@@ -135,18 +178,30 @@ function SpotifyPlaylistSection() {
           className="h-12 w-12 text-spotify-green mx-auto mb-4" 
           aria-hidden="true" 
         />
-        <p className="text-spotify-lightgray text-lg mb-4">
-          Spotifyとの連携はまだ準備中です。
-          <br />
-          近日中に、あなたのドライブにぴったりのプレイリストをここで見つけられるようになります！
-        </p>
-        <Button 
-          className="bg-spotify-green text-white hover:bg-spotify-green/90 opacity-50 cursor-not-allowed" 
-          disabled
-          aria-disabled="true"
-        >
-          Spotifyと連携する (準備中)
-        </Button>
+        {playlists ? (
+          <div>
+            <p className="text-spotify-lightgray text-lg mb-4">あなたのSpotifyプレイリスト一覧</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {playlists.map((pl) => (
+                <div key={pl.id} className="bg-spotify-dark rounded p-4 flex items-center gap-4">
+                  {pl.images && pl.images[0] && (
+                    <img src={pl.images[0].url} alt={pl.name} className="w-16 h-16 rounded" />
+                  )}
+                  <span className="text-white text-lg">{pl.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div>
+            <p className="text-spotify-lightgray text-lg mb-4">{errorMsg}</p>
+            <Link href="/api/spotify/auth">
+              <Button className="bg-spotify-green text-white hover:bg-spotify-green/90" aria-label="Spotifyと連携する">
+                Spotifyと連携する
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   )
