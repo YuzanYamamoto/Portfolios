@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
       pathname: url.pathname
     })
     
-    // 開発環境での警告
+    // 開発環境での警告（localhostの場合のみ）
     if (isDevelopment && url.host.includes('localhost')) {
       console.warn("⚠️  Development environment detected with localhost")
       console.warn("⚠️  Spotify OAuth may not work with localhost redirect URI")
@@ -48,6 +48,9 @@ export async function GET(req: NextRequest) {
       // 開発環境では警告ページにリダイレクト
       return NextResponse.redirect(`${url.protocol}//${url.host}/mypage?spotify_error=dev_warning`)
     }
+    
+    // 本番環境またはngrok等の場合は通常の認証フローを続行
+    console.log("Proceeding with Spotify OAuth flow")
     
     // 動的にredirect URIを生成
     const redirect_uri = `${url.protocol}//${url.host}/api/spotify/callback`

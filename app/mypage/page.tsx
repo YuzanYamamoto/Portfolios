@@ -205,17 +205,26 @@ async function SpotifyPlaylistSection({ searchParams }: { searchParams: any }) {
   } = await supabase.auth.getUser()
   let playlists = null
   let errorMsg = ""
+  let debugInfo = ""
+  
   if (user) {
     const { data, error } = await supabase
       .from("users")
-      .select("spotify_access_token")
+      .select("spotify_access_token, spotify_refresh_token, spotify_token_expires_at")
       .eq("id", user.id)
       .single()
+    
+    // デバッグ情報を追加
+    debugInfo = `ユーザーID: ${user.id.substring(0, 8)}..., データ取得エラー: ${error ? 'あり' : 'なし'}, トークン存在: ${data?.spotify_access_token ? 'あり' : 'なし'}`
+    
     if (data && data.spotify_access_token) {
       playlists = await fetchSpotifyPlaylists(data.spotify_access_token)
       if (!playlists) errorMsg = "Spotifyプレイリストの取得に失敗しました。"
     } else {
       errorMsg = "Spotify連携が未完了です。"
+      if (error) {
+        errorMsg += ` (エラー: ${error.message})`
+      }
     }
   } else {
     errorMsg = "ログインが必要です。"
@@ -249,6 +258,11 @@ async function SpotifyPlaylistSection({ searchParams }: { searchParams: any }) {
         ) : (
           <div>
             <p className="text-spotify-lightgray text-lg mb-4">{errorMsg}</p>
+            {debugInfo && (
+              <p className="text-xs text-spotify-lightgray mb-4 opacity-70">
+                デバッグ情報: {debugInfo}
+              </p>
+            )}
             <a href="/api/spotify/auth" className="inline-block">
               <Button className="bg-spotify-green text-white hover:bg-spotify-green/90" aria-label="Spotifyと連携する">
                 Spotifyと連携する

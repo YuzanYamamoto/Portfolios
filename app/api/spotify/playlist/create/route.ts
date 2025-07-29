@@ -31,16 +31,38 @@ export async function POST(req: NextRequest) {
     .eq("id", user.id)
     .single()
   
-  console.log("ユーザーデータ取得結果:", { userRow, userError })
+  console.log("ユーザーデータ取得結果:", { 
+    userRow: userRow ? { 
+      hasToken: !!userRow.spotify_access_token,
+      tokenLength: userRow.spotify_access_token ? userRow.spotify_access_token.length : 0
+    } : null, 
+    userError 
+  })
   
   if (userError) {
     console.error("ユーザーデータ取得エラー:", userError)
-    return NextResponse.json({ error: "ユーザーデータの取得に失敗しました", details: userError }, { status: 400 })
+    return NextResponse.json({ 
+      error: "ユーザーデータの取得に失敗しました", 
+      details: userError,
+      debug: { userId: user.id }
+    }, { status: 400 })
   }
   
   if (!userRow || !userRow.spotify_access_token) {
-    console.log("Spotifyトークンが見つかりません:", userRow)
-    return NextResponse.json({ error: "Spotifyトークンが見つかりません", needsAuth: true }, { status: 400 })
+    console.log("Spotifyトークンが見つかりません:", { 
+      userRowExists: !!userRow,
+      hasToken: userRow ? !!userRow.spotify_access_token : false,
+      userId: user.id
+    })
+    return NextResponse.json({ 
+      error: "Spotifyトークンが見つかりません", 
+      needsAuth: true,
+      debug: { 
+        userRowExists: !!userRow,
+        hasToken: userRow ? !!userRow.spotify_access_token : false,
+        userId: user.id
+      }
+    }, { status: 400 })
   }
 
   try {
