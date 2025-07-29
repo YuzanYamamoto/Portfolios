@@ -44,7 +44,7 @@ export function SpotifyPlaylistClient({ playlist, planId }: SpotifyPlaylistClien
             <div className="flex items-center gap-2 text-spotify-green hover:text-spotify-green/80 transition-colors">
               <ExternalLink className="h-4 w-4" />
               <a
-                href={playlist.url.includes('/embed/') ? playlist.url.replace('/embed/', '/playlist/') : playlist.url}
+                href={playlist.url.includes('/embed/playlist/') ? playlist.url.replace('/embed/playlist/', '/playlist/') : playlist.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm underline"
