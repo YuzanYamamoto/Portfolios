@@ -256,11 +256,11 @@ async function SpotifyPlaylistSection({ searchParams }: { searchParams: any }) {
         ) : (
           <div>
             <p className="text-spotify-lightgray text-lg mb-4">{errorMsg}</p>
-            <Link href="/api/spotify/auth">
+            <a href="/api/spotify/auth" className="inline-block">
               <Button className="bg-spotify-green text-white hover:bg-spotify-green/90" aria-label="Spotifyと連携する">
                 Spotifyと連携する
               </Button>
-            </Link>
+            </a>
           </div>
         )}
       </div>
