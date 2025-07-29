@@ -170,6 +170,9 @@ function SpotifyErrorMessage({ searchParams }: { searchParams: any }) {
     case "server":
       errorMessage = "サーバーエラーが発生しました。しばらく時間をおいて再度お試しください。"
       break
+    case "dev_warning":
+      errorMessage = "開発環境ではSpotify連携をテストできません。本番環境でお試しください。"
+      break
     default:
       if (errorDescription) {
         errorMessage = `Spotify連携エラー: ${decodeURIComponent(errorDescription)}`
@@ -292,10 +295,11 @@ function PageHeader() {
 }
 
 interface MyPageProps {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 export default async function MyPage({ searchParams }: MyPageProps) {
+  const resolvedSearchParams = await searchParams
   const supabase = await createClient()
   
   const {
@@ -347,11 +351,11 @@ export default async function MyPage({ searchParams }: MyPageProps) {
           </CardHeader>
           
           <CardContent className="space-y-8">
-            <SpotifyErrorMessage searchParams={searchParams} />
-            <SpotifySuccessMessage searchParams={searchParams} />
+            <SpotifyErrorMessage searchParams={resolvedSearchParams} />
+            <SpotifySuccessMessage searchParams={resolvedSearchParams} />
             <PlanHistorySection plans={plans} />
             <Separator className="bg-spotify-gray" />
-            <SpotifyPlaylistSection searchParams={searchParams} />
+            <SpotifyPlaylistSection searchParams={resolvedSearchParams} />
           </CardContent>
         </Card>
       </div>
