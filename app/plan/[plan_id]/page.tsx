@@ -11,8 +11,8 @@ import Link from "next/link";
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 
-// クライアントコンポーネントをdynamic import（ssr: false）で呼び出し
-const PlaylistTracksEditor = dynamic(() => import("./PlaylistTracksEditor").then(mod => mod.PlaylistTracksEditor), { ssr: false });
+// クライアントコンポーネントをdynamic importで呼び出し
+const PlaylistTracksEditor = dynamic(() => import("./PlaylistTracksEditor").then(mod => mod.PlaylistTracksEditor));
 
 interface PlanDetailsPageProps {
   params: {
