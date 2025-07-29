@@ -154,7 +154,7 @@ export async function POST(request: Request) {
     return createErrorResponse("リクエストボディが無効です。", 400);
   }
 
-  const { departure, theme } = requestBody;
+  const { departure, theme, musicGenre } = requestBody;
 
   if (!departure || !theme || typeof departure !== 'string' || typeof theme !== 'string') {
     return createErrorResponse("出発地とテーマは文字列で必須です。", 400);
@@ -163,6 +163,7 @@ export async function POST(request: Request) {
   // 入力値のサニタイズ
   const sanitizedDeparture = sanitizeInput(departure);
   const sanitizedTheme = sanitizeInput(theme);
+  const sanitizedMusicGenre = musicGenre ? sanitizeInput(musicGenre) : null;
 
   if (!sanitizedDeparture || !sanitizedTheme) {
     return createErrorResponse("入力値が無効です。", 400);
@@ -178,6 +179,7 @@ export async function POST(request: Request) {
         ## 基本情報
         出発地: ${sanitizedDeparture}
         ドライブのテーマ: ${sanitizedTheme}
+        ${sanitizedMusicGenre ? `希望音楽ジャンル: ${sanitizedMusicGenre}` : ''}
 
         ## 作成する内容
         1. **ルート**: 5箇所の魅力的なスポットを含む
@@ -246,6 +248,7 @@ export async function POST(request: Request) {
         - **overall_spotify_playlist.tracks**: 10-15曲程度の楽曲リストを生成してください
           - 実在するアーティストと楽曲名を使用してください
           - ドライブのテーマ（海沿い、山道、都市部、夜景など）に合った楽曲を選択してください
+          ${sanitizedMusicGenre ? `- **音楽ジャンル指定**: ${sanitizedMusicGenre}ジャンルを中心とした楽曲を選択してください` : ''}
           - 出発から到着まで、ドライブの流れに合わせた楽曲順序にしてください
           - 各楽曲について、なぜその楽曲を選んだのか、ドライブのどの場面に合うかを説明してください
           - 邦楽・洋楽のバランスを考慮してください
@@ -280,6 +283,7 @@ export async function POST(request: Request) {
       user_id: user.id,
       departure: sanitizedDeparture,
       theme: sanitizedTheme,
+      music_genre: sanitizedMusicGenre,
       route: generatedPlan.route,
       total_duration: generatedPlan.total_duration,
       total_distance: generatedPlan.total_distance,

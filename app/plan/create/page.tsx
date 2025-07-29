@@ -32,6 +32,24 @@ const COMPANION_OPTIONS = [
 
 const THEME_EXAMPLES = ["自然", "グルメ", "歴史", "絶景", "温泉", "アート", "海沿い", "山道", "街並み"] as const
 
+const MUSIC_GENRE_OPTIONS = [
+  { value: "pop", label: "ポップス" },
+  { value: "rock", label: "ロック" },
+  { value: "jazz", label: "ジャズ" },
+  { value: "classical", label: "クラシック" },
+  { value: "electronic", label: "エレクトロニック" },
+  { value: "hip-hop", label: "ヒップホップ" },
+  { value: "r&b", label: "R&B" },
+  { value: "country", label: "カントリー" },
+  { value: "indie", label: "インディー" },
+  { value: "alternative", label: "オルタナティブ" },
+  { value: "folk", label: "フォーク" },
+  { value: "reggae", label: "レゲエ" },
+  { value: "latin", label: "ラテン" },
+  { value: "k-pop", label: "K-POP" },
+  { value: "j-pop", label: "J-POP" },
+] as const
+
 const getErrorMessage = (error: unknown): string => {
   if (error instanceof Error) {
     return error.message
@@ -50,6 +68,7 @@ export default function CreatePlanPage() {
   const [duration, setDuration] = useState("")
   const [companion, setCompanion] = useState("")
   const [theme, setTheme] = useState("")
+  const [musicGenre, setMusicGenre] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   
@@ -101,7 +120,8 @@ export default function CreatePlanPage() {
           departure: departure.trim(), 
           duration, 
           companion, 
-          theme: theme.trim() 
+          theme: theme.trim(),
+          musicGenre: musicGenre || undefined
         }),
       })
 
@@ -313,6 +333,43 @@ export default function CreatePlanPage() {
                     ))}
                   </div>
                 </div>
+              </div>
+
+              {/* 音楽ジャンル */}
+              <div className="space-y-2">
+                <Label htmlFor="musicGenre" className="text-spotify-lightgray">
+                  音楽ジャンル（プレイリスト用）
+                </Label>
+                <Select 
+                  value={musicGenre} 
+                  onValueChange={(value) => {
+                    setMusicGenre(value)
+                    if (errors.musicGenre) {
+                      setErrors(prev => ({ ...prev, musicGenre: "" }))
+                    }
+                  }}
+                >
+                  <SelectTrigger
+                    id="musicGenre"
+                    className="bg-spotify-gray border-spotify-gray text-white focus:ring-spotify-green"
+                  >
+                    <SelectValue placeholder="お好みの音楽ジャンルを選択（任意）" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-spotify-gray border-spotify-gray">
+                    {MUSIC_GENRE_OPTIONS.map((option) => (
+                      <SelectItem 
+                        key={option.value} 
+                        value={option.value} 
+                        className="text-white hover:bg-spotify-lightdark"
+                      >
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-spotify-lightgray">
+                  選択したジャンルに基づいてSpotifyプレイリストが生成されます
+                </p>
               </div>
 
               <Button

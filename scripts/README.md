@@ -25,6 +25,11 @@
 - `public.plans`テーブルに`spotify_playlist_id`カラムを追加
 - プランとSpotifyプレイリストの関連付けに使用
 
+### 5. 004_add_music_genre_to_plans.sql
+- `public.plans`テーブルに`music_genre`カラムを追加
+- ユーザーが選択した音楽ジャンル情報を保存
+- プレイリスト生成時にジャンル指定に使用
+
 ## Supabaseでの実行方法
 
 1. Supabaseダッシュボードにログイン

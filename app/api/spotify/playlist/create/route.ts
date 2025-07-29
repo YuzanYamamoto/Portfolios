@@ -14,10 +14,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "認証が必要です" }, { status: 401 })
   }
 
-  // プラン情報取得（overall_spotify_playlistも含む）
+  // プラン情報取得（overall_spotify_playlistとmusic_genreも含む）
   const { data: plan } = await supabase
     .from("plans")
-    .select("theme, departure, overall_spotify_playlist")
+    .select("theme, departure, overall_spotify_playlist, music_genre")
     .eq("id", plan_id)
     .single()
   if (!plan) {
