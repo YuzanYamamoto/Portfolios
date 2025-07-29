@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server"
 
 const client_id = process.env.SPOTIFY_CLIENT_ID!
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET!
-const redirect_uri = process.env.SPOTIFY_REDIRECT_URI!
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url)
@@ -11,6 +10,9 @@ export async function GET(req: NextRequest) {
   if (!code) {
     return NextResponse.json({ error: "No code provided" }, { status: 400 })
   }
+
+  // 動的にredirect URIを生成
+  const redirect_uri = `${url.protocol}//${url.host}/api/spotify/callback`
 
   const params = new URLSearchParams()
   params.append("grant_type", "authorization_code")

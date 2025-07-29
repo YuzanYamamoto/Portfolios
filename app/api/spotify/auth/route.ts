@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
 const client_id = process.env.SPOTIFY_CLIENT_ID!
-const redirect_uri = process.env.SPOTIFY_REDIRECT_URI!
 const scope = [
   "user-read-private",
   "user-read-email",
@@ -11,6 +10,10 @@ const scope = [
 ].join(" ")
 
 export async function GET(req: NextRequest) {
+  // 動的にredirect URIを生成
+  const url = new URL(req.url)
+  const redirect_uri = `${url.protocol}//${url.host}/api/spotify/callback`
+  
   const state = Math.random().toString(36).substring(2, 15)
   const params = new URLSearchParams({
     response_type: "code",
