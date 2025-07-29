@@ -275,7 +275,7 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
 
             {/* スポット別タブ */}
             <Tabs defaultValue="spot-0" className="w-full">
-              <TabsList className="grid w-full bg-spotify-gray overflow-x-auto" style={{ gridTemplateColumns: `repeat(${planData.route.length + 2}, minmax(120px, 1fr))` }}>
+              <TabsList className="grid w-full bg-spotify-gray overflow-x-auto" style={{ gridTemplateColumns: `repeat(${planData.route.length}, minmax(120px, 1fr))` }}>
                 {planData.route.map((spot, index) => (
                   <TabsTrigger 
                     key={index} 
@@ -285,12 +285,6 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
                     {index + 1}. {spot.name.length > 8 ? spot.name.substring(0, 8) + '...' : spot.name}
                   </TabsTrigger>
                 ))}
-                <TabsTrigger value="tips" className="data-[state=active]:bg-spotify-green text-xs px-2 py-1">
-                  アドバイス
-                </TabsTrigger>
-                <TabsTrigger value="info" className="data-[state=active]:bg-spotify-green text-xs px-2 py-1">
-                  追加情報
-                </TabsTrigger>
               </TabsList>
 
               {planData.route.map((spot, index) => (
@@ -342,163 +336,103 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
                       </div>
 
                       <GoogleMapEmbed spot={spot} apiKey={getMapsApiKey()} />
+
+                      {/* スポット固有の追加情報 */}
+                      <Separator className="bg-spotify-lightgray/20" />
+                      <div className="space-y-4">
+                        <h4 className="text-lg font-semibold text-spotify-green">このスポットの詳細情報</h4>
+                        
+                        <div className="grid gap-4">
+                          {planData.total_duration && (
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-5 w-5 text-spotify-green" />
+                              <span className="text-white">総所要時間: {planData.total_duration}</span>
+                            </div>
+                          )}
+                          
+                          {planData.total_distance && (
+                            <div className="flex items-center gap-2">
+                              <MapIcon className="h-5 w-5 text-spotify-green" />
+                              <span className="text-white">総距離: {planData.total_distance}</span>
+                            </div>
+                          )}
+
+                          {planData.best_season && (
+                            <div className="flex items-center gap-2">
+                              <Sun className="h-5 w-5 text-spotify-green" />
+                              <span className="text-white">ベストシーズン: {planData.best_season}</span>
+                            </div>
+                          )}
+
+                          {planData.recommended_start_time && (
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-5 w-5 text-spotify-green" />
+                              <span className="text-white">推奨出発時間: {planData.recommended_start_time}</span>
+                            </div>
+                          )}
+
+                          {planData.photo_spots && planData.photo_spots.length > 0 && (
+                            <Card className="bg-spotify-lightdark border-spotify-lightgray/20">
+                              <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-spotify-green text-base">
+                                  <Camera className="h-4 w-4" />
+                                  写真撮影スポット
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <ul className="list-disc list-inside space-y-1 text-white text-sm">
+                                  {planData.photo_spots.map((photoSpot, photoIndex) => (
+                                    <li key={photoIndex}>{photoSpot}</li>
+                                  ))}
+                                </ul>
+                              </CardContent>
+                            </Card>
+                          )}
+
+                          {planData.local_specialties && planData.local_specialties.length > 0 && (
+                            <Card className="bg-spotify-lightdark border-spotify-lightgray/20">
+                              <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-spotify-green text-base">
+                                  <Eye className="h-4 w-4" />
+                                  地域の特産品
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <ul className="list-disc list-inside space-y-1 text-white text-sm">
+                                  {planData.local_specialties.map((specialty, specialtyIndex) => (
+                                    <li key={specialtyIndex}>{specialty}</li>
+                                  ))}
+                                </ul>
+                              </CardContent>
+                            </Card>
+                          )}
+
+                          {planData.alternative_spots && planData.alternative_spots.length > 0 && (
+                            <Card className="bg-spotify-lightdark border-spotify-lightgray/20">
+                              <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-spotify-green text-base">
+                                  <MapPin className="h-4 w-4" />
+                                  代替スポット
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <div className="space-y-2">
+                                  {planData.alternative_spots.map((altSpot, altIndex) => (
+                                    <div key={altIndex} className="border-l-2 border-spotify-green pl-3">
+                                      <h5 className="font-semibold text-white text-sm">{altSpot.name}</h5>
+                                      <p className="text-xs text-spotify-lightgray">{altSpot.reason}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          )}
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 </TabsContent>
               ))}
-
-              <TabsContent value="tips" className="space-y-4">
-                <div className="grid gap-4">
-                  <Card className="bg-spotify-gray border-spotify-lightgray/20">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-spotify-green">
-                        <Car className="h-5 w-5" />
-                        運転のコツ
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-white">{planData.tips.driving}</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-spotify-gray border-spotify-lightgray/20">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-spotify-green">
-                        <Lightbulb className="h-5 w-5" />
-                        事前準備
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-white">{planData.tips.preparation}</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-spotify-gray border-spotify-lightgray/20">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-spotify-green">
-                        <Wallet className="h-5 w-5" />
-                        予算について
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-white">{planData.tips.budget}</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-spotify-gray border-spotify-lightgray/20">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-spotify-green">
-                        <Sun className="h-5 w-5" />
-                        天候について
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-white">{planData.tips.weather}</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-spotify-gray border-spotify-lightgray/20">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-spotify-green">
-                        <AlertCircle className="h-5 w-5" />
-                        安全について
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-white">{planData.tips.safety}</p>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="info" className="space-y-4">
-                <div className="grid gap-4">
-                  {planData.total_duration && (
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-5 w-5 text-spotify-green" />
-                      <span className="text-white">総所要時間: {planData.total_duration}</span>
-                    </div>
-                  )}
-                  
-                  {planData.total_distance && (
-                    <div className="flex items-center gap-2">
-                      <MapIcon className="h-5 w-5 text-spotify-green" />
-                      <span className="text-white">総距離: {planData.total_distance}</span>
-                    </div>
-                  )}
-
-                  {planData.best_season && (
-                    <div className="flex items-center gap-2">
-                      <Sun className="h-5 w-5 text-spotify-green" />
-                      <span className="text-white">ベストシーズン: {planData.best_season}</span>
-                    </div>
-                  )}
-
-                  {planData.recommended_start_time && (
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-5 w-5 text-spotify-green" />
-                      <span className="text-white">推奨出発時間: {planData.recommended_start_time}</span>
-                    </div>
-                  )}
-
-                  {planData.photo_spots && planData.photo_spots.length > 0 && (
-                    <Card className="bg-spotify-gray border-spotify-lightgray/20">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-spotify-green">
-                          <Camera className="h-5 w-5" />
-                          写真撮影スポット
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <ul className="list-disc list-inside space-y-1 text-white">
-                          {planData.photo_spots.map((spot, index) => (
-                            <li key={index}>{spot}</li>
-                          ))}
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {planData.local_specialties && planData.local_specialties.length > 0 && (
-                    <Card className="bg-spotify-gray border-spotify-lightgray/20">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-spotify-green">
-                          <Eye className="h-5 w-5" />
-                          地域の特産品
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <ul className="list-disc list-inside space-y-1 text-white">
-                          {planData.local_specialties.map((specialty, index) => (
-                            <li key={index}>{specialty}</li>
-                          ))}
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {planData.alternative_spots && planData.alternative_spots.length > 0 && (
-                    <Card className="bg-spotify-gray border-spotify-lightgray/20">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-spotify-green">
-                          <MapPin className="h-5 w-5" />
-                          代替スポット
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          {planData.alternative_spots.map((spot, index) => (
-                            <div key={index} className="border-l-2 border-spotify-green pl-3">
-                              <h4 className="font-semibold text-white">{spot.name}</h4>
-                              <p className="text-sm text-spotify-lightgray">{spot.reason}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-              </TabsContent>
             </Tabs>
 
             <Separator className="bg-spotify-gray" />
@@ -510,6 +444,78 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
             <Suspense fallback={<div>曲順エディタを読み込み中...</div>}>
               <PlaylistTracksEditor plan_id={params.plan_id} />
             </Suspense>
+
+            <Separator className="bg-spotify-gray" />
+
+            {/* アドバイス（Spotifyプレイリストの下に移動） */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <Lightbulb className="h-6 w-6 text-spotify-green" />
+                <h2 className="text-2xl font-bold text-spotify-green">ドライブのアドバイス</h2>
+              </div>
+              
+              <div className="grid gap-4">
+                <Card className="bg-spotify-gray border-spotify-lightgray/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-spotify-green">
+                      <Car className="h-5 w-5" />
+                      運転のコツ
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-white">{planData.tips.driving}</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-spotify-gray border-spotify-lightgray/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-spotify-green">
+                      <Lightbulb className="h-5 w-5" />
+                      事前準備
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-white">{planData.tips.preparation}</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-spotify-gray border-spotify-lightgray/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-spotify-green">
+                      <Wallet className="h-5 w-5" />
+                      予算について
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-white">{planData.tips.budget}</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-spotify-gray border-spotify-lightgray/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-spotify-green">
+                      <Sun className="h-5 w-5" />
+                      天候について
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-white">{planData.tips.weather}</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-spotify-gray border-spotify-lightgray/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-spotify-green">
+                      <AlertCircle className="h-5 w-5" />
+                      安全について
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-white">{planData.tips.safety}</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
