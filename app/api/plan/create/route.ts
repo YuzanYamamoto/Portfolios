@@ -217,7 +217,7 @@ export async function POST(request: Request) {
           "overall_spotify_playlist": {
             "title": "ドライブプラン全体の雰囲気に合うプレイリストタイトル（例：「海沿いドライブ〜爽やかな風と共に〜」）",
             "description": "プレイリストの詳細説明（ドライブの雰囲気、楽曲の特徴、聴くタイミングなど）",
-            "url": "https://open.spotify.com/embed/playlist/37i9dQZF1DX0XUsuxWHRQd",
+            "url": "https://open.spotify.com/embed/playlist/[PLAYLIST_ID]",
             "tracks": [
               {
                 "title": "楽曲名",
@@ -242,7 +242,10 @@ export async function POST(request: Request) {
         ## Spotifyプレイリストに関する詳細指示
         - **overall_spotify_playlist.title**: ドライブのテーマと雰囲気に合った魅力的なタイトルを作成してください
         - **overall_spotify_playlist.description**: プレイリストの特徴、どんな場面で聴くべきか、楽曲の傾向などを詳しく説明してください
-        - **overall_spotify_playlist.url**: 固定で「https://open.spotify.com/embed/playlist/37i9dQZF1DX0XUsuxWHRQd」を使用してください
+        - **overall_spotify_playlist.url**: 実際に存在するSpotifyプレイリストの埋め込みURLを生成してください
+          - 形式: https://open.spotify.com/embed/playlist/[PLAYLIST_ID]
+          - ドライブのテーマに合った既存の人気プレイリストのIDを使用してください
+          - 例: 海沿いドライブなら爽やかな楽曲のプレイリスト、山道ドライブなら自然系の楽曲のプレイリストなど
         - **overall_spotify_playlist.tracks**: 10-15曲程度の楽曲リストを生成してください
           - 実在するアーティストと楽曲名を使用してください
           - ドライブのテーマ（海沿い、山道、都市部、夜景など）に合った楽曲を選択してください
@@ -250,6 +253,7 @@ export async function POST(request: Request) {
           - 各楽曲について、なぜその楽曲を選んだのか、ドライブのどの場面に合うかを説明してください
           - 邦楽・洋楽のバランスを考慮してください
           - 幅広い年代に受け入れられる楽曲を中心に選択してください
+          - 選択した楽曲は、指定したプレイリストURLに含まれている可能性が高い楽曲を優先してください
         
         - JSONの形式を厳密に守り、有効なJSONを生成してください
       `,
