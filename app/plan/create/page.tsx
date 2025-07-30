@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -13,55 +12,28 @@ import { Loader } from "@/components/loader"
 import { useToast } from "@/components/ui/use-toast"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { User, MapPin, Clock, Users, Heart, Music, Car, Sparkles, CheckCircle, ArrowRight } from "lucide-react"
+import { ArrowRight, Sparkles, User } from "lucide-react"
 
-const DURATION_OPTIONS = [
-  { value: "30", label: "30分" },
-  { value: "45", label: "45分" },
-  { value: "60", label: "1時間" },
-  { value: "75", label: "1時間15分" },
-  { value: "90", label: "1時間30分" },
-] as const
-
-const COMPANION_OPTIONS = [
-  { value: "一人", label: "一人" },
-  { value: "家族", label: "家族" },
-  { value: "友達", label: "友達" },
-  { value: "恋人", label: "恋人" },
-] as const
-
-const THEME_EXAMPLES = ["自然", "グルメ", "歴史", "絶景", "温泉", "アート", "海沿い", "山道", "街並み"] as const
-
-const MUSIC_GENRE_OPTIONS = [
-  { value: "pop", label: "ポップス" },
-  { value: "rock", label: "ロック" },
-  { value: "jazz", label: "ジャズ" },
-  { value: "classical", label: "クラシック" },
-  { value: "electronic", label: "エレクトロニック" },
-  { value: "hip-hop", label: "ヒップホップ" },
-  { value: "r&b", label: "R&B" },
-  { value: "country", label: "カントリー" },
-  { value: "indie", label: "インディー" },
-  { value: "alternative", label: "オルタナティブ" },
-  { value: "folk", label: "フォーク" },
-  { value: "reggae", label: "レゲエ" },
-  { value: "latin", label: "ラテン" },
-  { value: "k-pop", label: "K-POP" },
-  { value: "j-pop", label: "J-POP" },
-] as const
-
-const getErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) {
-    return error.message
-  }
-  if (typeof error === "object" && error !== null && "message" in error) {
-    const message = (error as { message: unknown }).message
-    if (typeof message === "string") {
-      return message
-    }
-  }
-  return "プランの作成中に不明なエラーが発生しました。"
-}
+// 新しいインポート
+import { FormErrors, CreatePlanRequest } from "@/types"
+import { 
+  DURATION_OPTIONS, 
+  COMPANION_OPTIONS, 
+  MUSIC_GENRE_OPTIONS,
+  THEME_EXAMPLES,
+  SUCCESS_MESSAGES,
+  ERROR_MESSAGES 
+} from "@/constants"
+import { 
+  validatePlanForm, 
+  getErrorMessage, 
+  getCompletedFields 
+} from "@/lib/utils/validation"
+import { createPlan } from "@/lib/utils/api"
+import { Header } from "@/components/common/header"
+import { BackgroundAnimation } from "@/components/common/background-animation"
+import { FormField } from "@/components/forms/form-field"
+import { ThemeSelector } from "@/components/forms/theme-selector"
 
 export default function CreatePlanPage() {
   const [departure, setDeparture] = useState("")

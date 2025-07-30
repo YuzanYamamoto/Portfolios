@@ -209,8 +209,12 @@ async function SpotifyPlaylistSection({ searchParams }: { searchParams: any }) {
   let playlists = null
   let errorMsg = ""
   let debugInfo = ""
+  let isGuest = false
   
   if (user) {
+    // ゲストユーザーかどうかを判定
+    isGuest = user.user_metadata?.is_guest === true
+    
     // まずユーザーレコードが存在するかチェック
     let { data, error } = await supabase
       .from("users")
@@ -245,7 +249,7 @@ async function SpotifyPlaylistSection({ searchParams }: { searchParams: any }) {
     }
     
     // デバッグ情報を追加
-    debugInfo = `ユーザーID: ${user.id.substring(0, 8)}..., データ取得エラー: ${error ? 'あり' : 'なし'}, トークン存在: ${data?.spotify_access_token ? 'あり' : 'なし'}`
+    debugInfo = `ユーザーID: ${user.id.substring(0, 8)}..., データ取得エラー: ${error ? 'あり' : 'なし'}, トークン存在: ${data?.spotify_access_token ? 'あり' : 'なし'}, ゲスト: ${isGuest ? 'はい' : 'いいえ'}`
     
     if (data && data.spotify_access_token) {
       playlists = await fetchSpotifyPlaylists(data.spotify_access_token)

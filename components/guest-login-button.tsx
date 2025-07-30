@@ -5,39 +5,64 @@ import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { useState } from "react"
+import { ROUTES, APP_CONFIG } from "@/constants"
 
-export function GuestLoginButton() {
+interface GuestLoginButtonProps {
+  className?: string;
+  onError?: (error: string) => void;
+  onSuccess?: () => void;
+}
+
+export function GuestLoginButton({ 
+  className = "w-full bg-spotify-gray text-white hover:bg-spotify-lightdark",
+  onError,
+  onSuccess
+}: GuestLoginButtonProps) {
   const router = useRouter()
   const supabase = createClient()
   const [isLoading, setIsLoading] = useState(false)
 
+  const generateGuestCredentials = () => {
+    const timestamp = Date.now()
+    const randomString = Math.random().toString(36).substring(2, 15)
+    return {
+      email: `guest_${timestamp}@${APP_CONFIG.APP_NAME.toLowerCase().replace(' ', '')}.com`,
+      password: `${randomString}${Math.random().toString(36).substring(2, 15)}`
+    }
+  }
+
   const handleGuestLogin = async () => {
     setIsLoading(true)
+    
     try {
-      // Generate a unique email for guest user
-      const guestEmail = `guest_${Date.now()}@tunedrive.com`
-      const guestPassword = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      const { email, password } = generateGuestCredentials()
 
       const { data, error } = await supabase.auth.signUp({
-        email: guestEmail,
-        password: guestPassword,
+        email,
+        password,
         options: {
           data: {
-            is_guest: true, // Custom flag for guest users
+            is_guest: true,
+            display_name: "ゲストユーザー"
           },
         },
       })
 
       if (error) {
         console.error("Error signing up guest:", error)
-        // Handle specific errors, e.g., if email already exists (unlikely with Date.now())
-        // For simplicity, we'll just log and not redirect
-      } else if (data.user) {
+        onError?.(error.message || "ゲストログインに失敗しました")
+        return
+      }
+
+      if (data.user) {
         console.log("Guest user signed up:", data.user.id)
-        router.push("/plan/create") // Redirect to plan creation page
+        onSuccess?.()
+        router.push(ROUTES.PLAN_CREATE)
       }
     } catch (error) {
       console.error("Unexpected error during guest login:", error)
+      const errorMessage = error instanceof Error ? error.message : "予期しないエラーが発生しました"
+      onError?.(errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -47,10 +72,10 @@ export function GuestLoginButton() {
     <Button
       onClick={handleGuestLogin}
       disabled={isLoading}
-      className="w-full bg-spotify-gray text-white hover:bg-spotify-lightdark"
+      className={className}
     >
       {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-      ゲストとしてログイン
+      {isLoading ? "ログイン中..." : "ゲストとしてログイン"}
     </Button>
   )
 }

@@ -2,28 +2,20 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
-// import { google } from "@ai-sdk/google" // Gemini版
 
-// ルート内の各スポットの期待される構造を定義します
-interface Spot {
-  name: string;
-  description: string;
-  stay_minutes: number;
-  category: string;
-  address: string;
-  best_time: string;
-  highlights: string[];
-  budget_range: string;
-  parking_info: string;
-  photo_prompt: string;
-}
-
-// プラン全体のSpotifyプレイリストの期待される構造を定義します
-interface OverallSpotifyPlaylist {
-  title: string;
-  description: string;
-  url: string;
-}
+// 型定義とユーティリティのインポート
+import { Spot, Tips, SpotifyPlaylist, CreatePlanRequest } from "@/types";
+import { APP_CONFIG, ERROR_MESSAGES } from "@/constants";
+import { 
+  sanitizeInput, 
+  getErrorMessage 
+} from "@/lib/utils/validation";
+import { 
+  createErrorResponse as createApiErrorResponse, 
+  parseRequestBody, 
+  checkEnvironmentVariables, 
+  logUserInfo 
+} from "@/lib/utils/api";
 
 // AIから生成されるプラン全体の構造を定義します
 interface GeneratedPlan {
@@ -31,25 +23,10 @@ interface GeneratedPlan {
   total_duration: string;
   total_distance: string;
   recommended_start_time: string;
-  tips: {
-    driving: string;
-    preparation: string;
-    budget: string;
-    weather: string;
-    safety: string;
-  };
+  tips: Tips;
   local_specialties: string[];
   photo_spots: string[];
-  overall_spotify_playlist?: OverallSpotifyPlaylist;
-}
-
-// 入力値のサニタイズ関数
-function sanitizeInput(input: string): string {
-  return input
-    .replace(/[<>\"']/g, '') // HTMLタグや引用符を除去
-    .replace(/javascript:/gi, '') // JavaScriptプロトコルを除去
-    .trim()
-    .substring(0, 200); // 長さ制限
+  overall_spotify_playlist?: SpotifyPlaylist;
 }
 
 // 生成されたプランの構造を検証する関数
