@@ -31,7 +31,7 @@ Next.jsとSupabaseを用いたAIドライブプラン提案アプリです。
 - **デプロイ**：Vercel  
 - **バージョン管理**：Git / GitHub  
 - **CI/CD**：GitHub Actions（ESLint対応）  
-- **開発補助**：ChatGPT、v0.dev、GitHub Copilot Chat
+- **開発補助**：ChatGPT、v0.dev、GitHub Copilot Chat、Cline
 
 ---
 
