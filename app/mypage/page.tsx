@@ -6,6 +6,11 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { MapPin, CalendarDays, Music, AlertCircle, Car, Sparkles } from "lucide-react"
 import { logout } from "@/app/actions/logout"
+import { Suspense } from "react"
+import dynamic from "next/dynamic"
+
+// クライアントコンポーネントをdynamic importで呼び出し
+const DeletePlanButtonMyPage = dynamic(() => import("./DeletePlanButtonMyPage").then(mod => mod.DeletePlanButtonMyPage));
 
 
 interface Plan {
@@ -77,16 +82,24 @@ function PlanHistorySection({ plans }: { plans: Plan[] | null }) {
           {plans.map((plan, index) => (
             <Card 
               key={plan.id} 
-              className="bg-spotify-gray/50 backdrop-blur-sm border-spotify-dark text-white hover:bg-spotify-gray/70 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg"
+              className="group relative bg-spotify-gray/50 backdrop-blur-sm border-spotify-dark text-white hover:bg-spotify-gray/70 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg"
               style={{
                 animationDelay: `${index * 100}ms`
               }}
             >
+              {/* 削除ボタン */}
+              <Suspense fallback={null}>
+                <DeletePlanButtonMyPage 
+                  planId={plan.id} 
+                  planTitle={`${plan.departure}から${plan.theme}のドライブプラン`}
+                />
+              </Suspense>
+              
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg text-spotify-green line-clamp-2">
                   {plan.theme}
                 </CardTitle>
-                <CardDescription className="text-spotify-lightgray flex items-center gap-1">
+                <CardDescription className="text-spotify-lightgray flex items-center gap-1 mt-1">
                   <MapPin className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
                   <span className="truncate">{plan.departure}から</span>
                 </CardDescription>
