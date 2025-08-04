@@ -14,6 +14,7 @@ import dynamic from "next/dynamic";
 // クライアントコンポーネントをdynamic importで呼び出し
 const PlaylistTracksEditor = dynamic(() => import("./PlaylistTracksEditor").then(mod => mod.PlaylistTracksEditor));
 const SpotifyPlaylistClient = dynamic(() => import("./SpotifyPlaylistClient").then(mod => mod.SpotifyPlaylistClient));
+const DeletePlanButton = dynamic(() => import("./DeletePlanButton").then(mod => mod.DeletePlanButton));
 
 interface PlanDetailsPageProps {
   params: {
@@ -196,12 +197,25 @@ export default async function PlanDetailsPage({ params }: PlanDetailsPageProps) 
       </header>
 
       <div className="flex-1 flex flex-col items-center p-4 pt-20 relative z-10">
-        <Card className="w-full max-w-4xl bg-spotify-lightdark/80 backdrop-blur-md border-spotify-gray text-white shadow-2xl">
+        <Card className="w-full max-w-4xl bg-spotify-lightdark/80 backdrop-blur-md border-spotify-gray text-white shadow-2xl relative">
           <CardHeader>
-            <CardTitle className="text-3xl font-bold text-spotify-green">ドライブプラン詳細</CardTitle>
-            <CardDescription className="text-spotify-lightgray">
-              AIが生成したあなたのドライブプランです。
-            </CardDescription>
+            <div className="flex items-start justify-between">
+              <div>
+                <CardTitle className="text-3xl font-bold text-spotify-green">ドライブプラン詳細</CardTitle>
+                <CardDescription className="text-spotify-lightgray">
+                  AIが生成したあなたのドライブプランです。
+                </CardDescription>
+              </div>
+              {/* 削除ボタンをカードの右上に配置 */}
+              <div className="flex-shrink-0">
+                <Suspense fallback={<div className="text-spotify-lightgray text-sm">読み込み中...</div>}>
+                  <DeletePlanButton 
+                    planId={planData.id} 
+                    planTitle={`${planData.departure}から${planData.theme}のドライブプラン`}
+                  />
+                </Suspense>
+              </div>
+            </div>
           </CardHeader>
 
           <CardContent className="space-y-6">
